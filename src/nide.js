@@ -298,6 +298,11 @@ class Nide{
         }
     }
 
+    CF(target){
+        this.fileName = target;
+        this.fileStatus = '*';
+    }
+
     RunCode(){
         
         let compiledCode = this.CompileCode(this.code);
