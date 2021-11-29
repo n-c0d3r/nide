@@ -222,45 +222,45 @@ class Nide{
         }
         else if(this.lang == 'nide'){
 
-            let endCode = code.length-1;
+            let lines = code.split('\n');
 
-            for(let i=0;i<code.length;i++){
-                if(code[i]=='\n'){
-                    endCode=i-1;
-                    break;
+            for(let line of lines){
+                let args = line.split(' ');
+
+                let compiledLine = '';
+
+                let newArgs = [];
+    
+                for(let a of args){
+                    if(a!=''){
+                        newArgs.push(a);
+                    }
                 }
-            }
+    
+                args = newArgs;
 
-            code = code.substring(0,endCode+1);
-
-
-            let args = code.split(' ');
-
-            let newArgs = [];
-
-            for(let a of args){
-                if(a!=''){
-                    newArgs.push(a);
+                if(args.length>=1){
+                    var command;
+                    
+                    try{
+                        command = require('./commands/'+args[0]);
+                        compiledLine = command(args);
+                    }
+                    catch(err){
+                        console.error(err);
+                    }
+                    finally{
+                        compiledCode += compiledLine;
+                    }
+                    
                 }
+    
             }
-
-            args = newArgs;
-
-            var command;
-            
-            try{
-                command = require('./commands/'+args[0]);
-                code = command(args);
-            }
-            catch(err){
-                console.error(err);
-            }
-
 
             compiledCode = `
                 return ((nide)=>{  
 
-                    ${code}
+                    ${compiledCode}
 
                 });
             `;
