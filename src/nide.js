@@ -9,6 +9,38 @@ const fs = require('fs');
 
 const child_process = require('child_process');
 
+const spaces = function(count){
+    let r = '';
+    for(let i=0;i<count;i++){
+        r+=' ';
+    }
+    return r;
+}
+
+const withLineIndicesCode = function(coloredCode,maxSpaces){
+
+    coloredCode = spaces(maxSpaces)+'0 '+'|'+coloredCode;
+
+    let newCode = '';
+
+    let cursorLineLevel = 0;
+
+    let lineLevel = 0;
+
+    for(let i = 0;i<coloredCode.length;i++){
+        let c = coloredCode[i];
+        newCode += c;
+
+        if(c == '\n'){
+            lineLevel++;
+            newCode += '\x1b[40m' + spaces(maxSpaces - lineLevel.toString().length + 1) + lineLevel + ' |\x1b[40m';
+        }
+
+    }
+
+    return newCode;
+}
+
 class Nide{
     constructor(option){
 
@@ -140,8 +172,7 @@ class Nide{
 
     Start(){
         
-        console.clear();
-
+        this.Clear();
 
     }
 
@@ -214,6 +245,17 @@ class Nide{
         return compiledCode;
     }
 
+    ExecCMDCommand(command){
+        child_process.exec(command, (err, stdout, stderr) => {
+            if (err) {
+                console.log(`${err}`);
+                return;
+            }
+
+            console.log(`${stdout}`);
+        });
+    }
+
     RunCode(){
         
         let compiledCode = this.CompileCode(this.code);
@@ -225,6 +267,8 @@ class Nide{
                 this.code = '';
         
                 console.clear();
+        
+                process.stdout.write('\x1b[33mLANG: \x1b[32m'+this.lang+'\x1b[37m\n\n');
                 
                 process.stdout.write('\x1b[36mRun:\x1b[37m\n');
         
@@ -243,6 +287,8 @@ class Nide{
             this.code = '';
         
             console.clear();
+        
+            process.stdout.write('\x1b[33mLANG: \x1b[32m'+this.lang+'\x1b[37m\n\n');
                 
             process.stdout.write('\x1b[36mRun:\x1b[37m\n');
 
@@ -387,21 +433,56 @@ class Nide{
         if(option==null)
             option=new Object();
 
+        let newCursor = 0;
+
         if(!(option.printColoredCode == true)){
             if(this.cursor<this.code.length){
                 if(this.code[this.cursor] == '\n'){
-                    coloredCode = this.code.substring(0,this.cursor) + '\x1b[46m' + ' ' + this.code[this.cursor] + '\x1b[40m' + this.code.substring(this.cursor+1,this.code.length);
+                    newCursor = (this.code.substring(0,this.cursor) + '\x1b[46m' + ' \x1b[40m').length;
+                    coloredCode = this.code.substring(0,this.cursor) + '\x1b[46m' + ' \x1b[40m' + this.code[this.cursor] + '\x1b[40m' + this.code.substring(this.cursor+1,this.code.length);
+                    
                 }
                 else{
+                    newCursor = (this.code.substring(0,this.cursor) + '\x1b[46m').length;
                     coloredCode = this.code.substring(0,this.cursor) + '\x1b[46m' + this.code[this.cursor] + '\x1b[40m' + this.code.substring(this.cursor+1,this.code.length);
+                    
                 }
             }
             else{
+                newCursor = (this.code.substring(0,this.code.length) + '\x1b[46m').length;
                 coloredCode = this.code.substring(0,this.code.length) + '\x1b[46m' + ' ' + '\x1b[40m';
             }
         }
 
-        process.stdout.write(coloredCode);
+
+
+
+        // let maxSpaces = 6;
+
+        // coloredCode = spaces(maxSpaces)+'0 '+'|'+coloredCode;
+
+        let newCode = withLineIndicesCode(coloredCode,6);
+
+        // let cursorLineLevel = 0;
+
+        // let lineLevel = 0;
+
+        // for(let i = 0;i<coloredCode.length;i++){
+        //     let c = coloredCode[i];
+        //     newCode += c;
+
+        //     if(c == '\n'){
+        //         lineLevel++;
+        //         newCode += '\x1b[40m' + spaces(maxSpaces - lineLevel.toString().length + 1) + lineLevel + ' |\x1b[40m';
+        //     }
+
+        // }
+        
+
+        
+        process.stdout.write('\x1b[33mLANG: \x1b[32m'+this.lang+'\x1b[37m\n\n');
+
+        process.stdout.write(newCode);
 
         this.console.HideCursor();
     }
