@@ -52,6 +52,8 @@ class Nide{
 
         this.cwd = option.cwd;
 
+        this.lastFileOpenedCode = '';
+
         this.fileName = 'document.txt';
 
         this.fileStatus = '*';
@@ -89,6 +91,11 @@ class Nide{
                 }
                 if(key && key.meta && key.name == "q"){
                     app.SaveFile();
+                    return;
+                }
+                if(key && key.meta && key.name == "m"){
+                    app.code = app.lastFileOpenedCode;
+                    app.ReprintCode();
                     return;
                 }
 
@@ -178,6 +185,7 @@ class Nide{
 
     SaveFile(){
         fs.writeFileSync(path.join(this.cwd,this.fileName),this.code);
+        this.lastFileOpenedCode = this.code;
         this.fileStatus = '';
         this.ReprintCode();
     }
@@ -303,6 +311,20 @@ class Nide{
         this.fileStatus = '*';
     }
 
+    OpenFile(name){
+        let fullPath = path.join(this.cwd,name);
+        if(fs.existsSync(fullPath)){
+            
+            this.code = fs.readFileSync(fullPath).toString();
+
+            this.lastFileOpenedCode = this.code;
+
+        }
+        else{
+            this.code = name+' Not Found!!!';
+        }
+    }
+
     RunCode(){
         
         let compiledCode = this.CompileCode(this.code);
@@ -311,6 +333,7 @@ class Nide{
             try{
                 let func = Function(compiledCode)();
                 
+                this.lastFileOpenedCode = this.code;
                 this.code = '';
         
                 console.clear();
@@ -331,6 +354,7 @@ class Nide{
 
             fs.writeFileSync(cacheFilePath,compiledCode);
             
+            this.lastFileOpenedCode = this.code;
             this.code = '';
         
             console.clear();
