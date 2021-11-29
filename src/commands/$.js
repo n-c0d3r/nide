@@ -1,6 +1,6 @@
 module.exports = (args)=>{
     let command = '';
-    for(let i=0;i<args.length;i++){
+    for(let i=1;i<args.length;i++){
         command += args[i];
         if(i!=args.length-1){
             command += ' ';

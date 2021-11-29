@@ -246,6 +246,7 @@ class Nide{
     }
 
     ExecCMDCommand(command){
+        console.log(`\n`);
         child_process.exec(command, (err, stdout, stderr) => {
             if (err) {
                 console.log(`${err}`);
