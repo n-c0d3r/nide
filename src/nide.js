@@ -334,7 +334,6 @@ class Nide{
                 let func = Function(compiledCode)();
                 
                 this.lastFileOpenedCode = this.code;
-                this.code = '';
         
                 console.clear();
         
@@ -355,7 +354,6 @@ class Nide{
             fs.writeFileSync(cacheFilePath,compiledCode);
             
             this.lastFileOpenedCode = this.code;
-            this.code = '';
         
             console.clear();
         
@@ -363,7 +361,7 @@ class Nide{
                 
             process.stdout.write('\x1b[36mRun:\x1b[37m\n');
 
-            child_process.exec('py '+cacheFilePath, (err, stdout, stderr) => {
+            child_process.exec('py "'+cacheFilePath+'"', (err, stdout, stderr) => {
                 if (err) {
                     console.log(`${err}`);
                     return;
@@ -376,8 +374,6 @@ class Nide{
         else if(this.lang == 'nide'){
             try{
                 let func = Function(compiledCode)();
-                
-                this.code = '';
                 
                 console.log('');
         
