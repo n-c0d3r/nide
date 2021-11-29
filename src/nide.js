@@ -12,6 +12,8 @@ class Nide{
 
         this.cursor = 0;
 
+        this.codeHis = [];
+        this.hisCIndex = 0;
 
         this.selectedBIndex=-1;
         this.selectedEIndex=-1;
@@ -21,16 +23,26 @@ class Nide{
 
         this.console.keypressEventListeners['Nide'] = function(ch,key){
             if(key != null){
-                if(key && key.shift && key.name == "r"){
+                if(key && key.meta && key.name == "l"){
                     app.RunCode();
                     return;
                 }
-                if(key && key.shift && key.name == "e"){
+                if(key && key.meta && key.name == "k"){
                     app.Exit();
                     return;
                 }
-                if(key && key.shift && key.name == "c"){
+                if(key && key.meta && key.name == "p"){
                     app.Clear();
+                    return;
+                }
+
+                if(key && key.ctrl && key.name == "z"){
+                    app.Undo();
+                    return;
+                }
+
+                if(key && key.ctrl && key.name == "y"){
+                    app.Redo();
                     return;
                 }
 
@@ -160,6 +172,67 @@ class Nide{
         this.code = this.code.substring(0,this.cursor) + key + this.code.substring(this.cursor,this.code.length);
         this.cursor = clamp(this.cursor+key.length,0,this.code.length);
 
+        this.AddToCodeHis(this.code);
+
+        this.ReprintCode();
+    }
+
+    AddToCodeHis(code){
+
+        if(this.codeHis.length==0){
+            this.codeHis.push({
+                'code':code,
+                'cursor':this.cursor
+            });
+        }
+        else{
+        
+            if(this.hisCIndex==this.codeHis.length-1){
+                this.codeHis.push({
+                    'code':code,
+                    'cursor':this.cursor
+                });
+                this.hisCIndex++;
+            }
+            else{
+                this.codeHis.splice(this.hisCIndex,this.codeHis.length-this.hisCIndex);
+                this.codeHis.push({
+                    'code':code,
+                    'cursor':this.cursor
+                });
+                this.hisCIndex++;
+            }
+        }
+
+    }
+
+    Undo(){
+        this.hisCIndex = clamp(this.hisCIndex-1,-1,this.codeHis.length-1);
+
+        if(this.hisCIndex==-1){
+            this.code='';
+            this.cursor=0;
+            this.ReprintCode();
+            return;
+        }
+
+        this.code = this.codeHis[this.hisCIndex].code;
+        this.cursor = this.codeHis[this.hisCIndex].cursor;
+        this.ReprintCode();
+    }
+
+    Redo(){
+        this.hisCIndex = clamp(this.hisCIndex+1,-1,this.codeHis.length-1);
+
+        if(this.hisCIndex==-1){
+            this.code='';
+            this.cursor=0;
+            this.ReprintCode();
+            return;
+        }
+
+        this.code = this.codeHis[this.hisCIndex].code;
+        this.cursor = this.codeHis[this.hisCIndex].cursor;
         this.ReprintCode();
     }
 
@@ -167,17 +240,24 @@ class Nide{
         this.code = this.code.substring(0,this.cursor-1) + this.code.substring(this.cursor,this.code.length);
         this.cursor = clamp(this.cursor-1,0,this.code.length);
 
+        this.AddToCodeHis(this.code);
+
         this.ReprintCode();
     }
 
     Delete(){
         this.code = this.code.substring(0,this.cursor) + this.code.substring(this.cursor+1,this.code.length);
 
+        this.AddToCodeHis(this.code);
+
         this.ReprintCode();
     }
 
     Clear(){
         this.code = '';
+
+        this.AddToCodeHis(this.code);
+
         this.ReprintCode();
     }
 
