@@ -9,6 +9,8 @@ const fs = require('fs');
 
 const child_process = require('child_process');
 
+const path = require('path');
+
 const spaces = function(count){
     let r = '';
     for(let i=0;i<count;i++){
@@ -247,14 +249,39 @@ class Nide{
 
     ExecCMDCommand(command){
         console.log(`\n`);
-        child_process.exec(command, (err, stdout, stderr) => {
-            if (err) {
-                console.log(`${err}`);
-                return;
-            }
+        child_process.exec(
+            command, 
+            {
+                cwd: this.cwd
+            },
+            (err, stdout, stderr) => {
+                if (err) {
+                    console.log(`${err}`);
+                    return;
+                }
 
-            console.log(`${stdout}`);
-        });
+                console.log(`${stdout}`);
+            }
+        );
+    }
+
+    CD(target){
+        let p = path.join(this.cwd,target);
+        if(fs.existsSync(p)){
+            this.cwd = p;
+        }
+        else{
+            this.code = 'Cant Change Directory!!!';
+        }
+    }
+    CP(target){
+        let p = target+":\\";
+        if(fs.existsSync(p)){
+            this.cwd = p;
+        }
+        else{
+            this.code = 'Cant Change Partition!!!';
+        }
     }
 
     RunCode(){
@@ -482,6 +509,7 @@ class Nide{
 
         
         process.stdout.write('\x1b[33mLANG: \x1b[32m'+this.lang+'\x1b[37m\n\n');
+        process.stdout.write('\x1b[33mCWD: \x1b[32m'+this.cwd+'\x1b[37m\n\n');
 
         process.stdout.write(newCode);
 
