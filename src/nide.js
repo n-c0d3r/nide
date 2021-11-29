@@ -5,10 +5,18 @@ const os = require('os');
 
 const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
 
+const fs = require('fs');
+
+const child_process = require('child_process');
+
 class Nide{
-    constructor(){
+    constructor(option){
 
         var app = this;
+
+        this.lang = option.lang;
+
+        this.cwd = option.cwd;
 
         this.cursor = 0;
 
@@ -124,13 +132,18 @@ class Nide{
     CompileCode(code){
         let compiledCode = '';
 
-        compiledCode = `
-            return ((nide)=>{  
+        if(this.lang == 'js'){
+            compiledCode = `
+                return ((nide)=>{  
 
-                ${code}
+                    ${code}
 
-            });
-        `;
+                });
+            `;
+        }
+        else if(this.lang == 'py'){
+            compiledCode = `${code}`;
+        }
 
         return compiledCode;
     }
@@ -139,19 +152,43 @@ class Nide{
         
         let compiledCode = this.CompileCode(this.code);
 
-        try{
-            let func = Function(compiledCode)();
+        if(this.lang == 'js'){
+            try{
+                let func = Function(compiledCode)();
+                
+                this.code = '';
+        
+                console.clear();
+                
+                process.stdout.write('\x1b[36mRun:\x1b[37m\n');
+        
+                return (func(this));
+            }
+            catch(err){
+                console.error(err);
+            }
+        }
+        else if(this.lang == 'py'){
+
+            let cacheFilePath = this.cwd + '/nide_code.py';
+
+            fs.writeFileSync(cacheFilePath,compiledCode);
             
             this.code = '';
-    
+        
             console.clear();
-            
+                
             process.stdout.write('\x1b[36mRun:\x1b[37m\n');
-    
-            return (func(this));
-        }
-        catch(err){
-            console.error(err);
+
+            child_process.exec('py '+cacheFilePath, (err, stdout, stderr) => {
+                if (err) {
+                    console.log(`${err}`);
+                    return;
+                }
+
+                console.log(`${stdout}`);
+            });
+
         }
 
     }
