@@ -3,7 +3,7 @@
 let lang = process.argv[2];
 
 if(lang==null){
-    lang = 'js';
+    lang = 'nide';
 }
 
 const Nide = require('./nide');

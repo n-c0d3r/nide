@@ -43,6 +43,12 @@ class Nide{
                     app.Clear();
                     return;
                 }
+                if(key && key.meta && key.name == "o"){
+                    app.ChangeLang('nide');
+                    app.code='';
+                    app.ReprintCode();
+                    return;
+                }
 
                 if(key && key.ctrl && key.name == "z"){
                     app.Undo();
@@ -115,6 +121,21 @@ class Nide{
 
         this.code = '';
 
+        this.LoadPlugins();
+
+    }
+
+    LoadPlugins(){
+        let plugins = require('./plugins/plugins.json');
+
+        for(let plugin of plugins){
+            (require('./plugins/'+plugin))(this);
+        }
+
+    }
+
+    ChangeLang(lang){
+        this.lang = lang;
     }
 
     Start(){
@@ -143,6 +164,51 @@ class Nide{
         }
         else if(this.lang == 'py'){
             compiledCode = `${code}`;
+        }
+        else if(this.lang == 'nide'){
+
+            let endCode = code.length-1;
+
+            for(let i=0;i<code.length;i++){
+                if(code[i]=='\n'){
+                    endCode=i-1;
+                    break;
+                }
+            }
+
+            code = code.substring(0,endCode+1);
+
+
+            let args = code.split(' ');
+
+            let newArgs = [];
+
+            for(let a of args){
+                if(a!=''){
+                    newArgs.push(a);
+                }
+            }
+
+            args = newArgs;
+
+            var command;
+            
+            try{
+                command = require('./commands/'+args[0]);
+                code = command(args);
+            }
+            catch(err){
+                console.error(err);
+            }
+
+
+            compiledCode = `
+                return ((nide)=>{  
+
+                    ${code}
+
+                });
+            `;
         }
 
         return compiledCode;
@@ -189,6 +255,20 @@ class Nide{
                 console.log(`${stdout}`);
             });
 
+        }
+        else if(this.lang == 'nide'){
+            try{
+                let func = Function(compiledCode)();
+                
+                this.code = '';
+                
+                console.log('');
+        
+                return (func(this));
+            }
+            catch(err){
+                console.error(err);
+            }
         }
 
     }
