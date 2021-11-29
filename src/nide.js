@@ -191,8 +191,14 @@ class Nide{
             option=new Object();
 
         if(!(option.printColoredCode == true)){
-            if(this.cursor<this.code.length)
-                coloredCode = this.code.substring(0,this.cursor) + '\x1b[46m' + this.code[this.cursor] + '\x1b[40m' + this.code.substring(this.cursor+1,this.code.length);
+            if(this.cursor<this.code.length){
+                if(this.code[this.cursor] == '\n'){
+                    coloredCode = this.code.substring(0,this.cursor) + '\x1b[46m' + ' ' + this.code[this.cursor] + '\x1b[40m' + this.code.substring(this.cursor+1,this.code.length);
+                }
+                else{
+                    coloredCode = this.code.substring(0,this.cursor) + '\x1b[46m' + this.code[this.cursor] + '\x1b[40m' + this.code.substring(this.cursor+1,this.code.length);
+                }
+            }
             else{
                 coloredCode = this.code.substring(0,this.code.length) + '\x1b[46m' + ' ' + '\x1b[40m';
             }
