@@ -1,1 +1,4 @@
-print('Hello World')
+a = "sagsdhfdhdfjdfjdfj"
+
+for c in a:
+    print(c)

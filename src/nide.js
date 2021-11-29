@@ -52,6 +52,10 @@ class Nide{
 
         this.cwd = option.cwd;
 
+        this.fileName = 'document.txt';
+
+        this.fileStatus = '*';
+
         this.cursor = 0;
 
         this.codeHis = [];
@@ -81,6 +85,10 @@ class Nide{
                     app.ChangeLang('nide');
                     app.code='';
                     app.ReprintCode();
+                    return;
+                }
+                if(key && key.meta && key.name == "q"){
+                    app.SaveFile();
                     return;
                 }
 
@@ -166,6 +174,12 @@ class Nide{
             (require('./plugins/'+plugin))(this);
         }
 
+    }
+
+    SaveFile(){
+        fs.writeFileSync(path.join(this.cwd,this.fileName),this.code);
+        this.fileStatus = '';
+        this.ReprintCode();
     }
 
     ChangeLang(lang){
@@ -369,6 +383,7 @@ class Nide{
     }
 
     AddToCodeHis(code){
+        this.fileStatus = '*';
 
         if(this.codeHis.length==0){
             this.codeHis.push({
@@ -508,8 +523,9 @@ class Nide{
         
 
         
-        process.stdout.write('\x1b[33mLANG: \x1b[32m'+this.lang+'\x1b[37m\n\n');
-        process.stdout.write('\x1b[33mCWD: \x1b[32m'+this.cwd+'\x1b[37m\n\n');
+        process.stdout.write('\x1b[33mLANG      : \x1b[32m'+this.lang+'\x1b[37m\n\n');
+        process.stdout.write('\x1b[33mCWD       : \x1b[32m'+this.cwd+'\x1b[37m\n\n');
+        process.stdout.write('\x1b[33mFILE NAME : \x1b[32m'+this.fileName+'\x1b[37m'+this.fileStatus+'\n\n');
 
         process.stdout.write(newCode);
 
