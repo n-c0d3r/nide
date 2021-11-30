@@ -391,6 +391,7 @@ class Nide{
     }
 
     RunCode(){
+        this.AddToCodeHis(this.code);
         
         let compiledCode = this.CompileCode(this.code);
 
