@@ -80,7 +80,7 @@ class Nide{
 
         this.cursorLineLevel = 0;
 
-        this.height = option.height;
+        this.maxHeight = option.maxHeight;
 
         this.lang = option.lang;
 
@@ -557,7 +557,7 @@ class Nide{
 
         }
 
-        this.cursorLineLevel = this.cursor;
+        this.cursorLineLevel = cursorLineLevel;
 
 
         if(!(option.printColoredCode == true)){
@@ -634,8 +634,8 @@ class Nide{
         let bI = 0;
         let eI = lines.length-1;
 
-        let halfHeight1 = parseInt(this.height/2);
-        let halfHeight2 = this.height-halfHeight1;
+        let halfHeight1 = parseInt(this.maxHeight/2);
+        let halfHeight2 = this.maxHeight-halfHeight1;
 
         
         eI = cursorLineLevel+halfHeight1;
@@ -671,7 +671,7 @@ class Nide{
                 process.stdout.write('\n');
             }
 
-            if(i==this.height){
+            if(i==this.maxHeight){
                 break;
             }
 

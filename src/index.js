@@ -6,10 +6,10 @@ if(lang==null){
     lang = 'nide';
 }
 
-let height = process.argv[3];
+let maxHeight = process.argv[3];
 
-if(height==null){
-    height = 20;
+if(maxHeight==null){
+    maxHeight = 20;
 }
 
 const Nide = require('./nide');
@@ -17,7 +17,7 @@ const Nide = require('./nide');
 let option = {
     'lang':lang,
     'cwd':process.cwd(),
-    'height':height
+    'maxHeight':maxHeight
 };
 
 
