@@ -1,18 +1,22 @@
 #!/usr/bin/env node
 
+let defaultConfig = require('./config/config.json');
+
 let mode = process.argv[2];
 
 if(mode==null){
-    mode = 'default';
+    mode = defaultConfig.mode;
 }
 
 let maxHeight = process.argv[3];
 
 if(maxHeight==null){
-    maxHeight = 20;
+    maxHeight = defaultConfig.maxHeight;
 }
 
 const Nide = require('./nide');
+
+const fs = require('fs');
 
 let option = {
     'mode':mode,
@@ -20,6 +24,7 @@ let option = {
     'maxHeight':maxHeight
 };
 
+fs.writeFileSync(__dirname+'/config/config.json',JSON.stringify(option));
 
 var app = new Nide(option);
 
