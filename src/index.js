@@ -14,10 +14,16 @@ if(defaultFileName==null){
     defaultFileName = defaultConfig.defaultFileName;
 }
 
+let maxTabsShowed = process.argv[5];
+
+if(maxTabsShowed==null){
+    maxTabsShowed = parseInt(defaultConfig.maxTabsShowed);
+}
+
 let maxHeight = process.argv[3];
 
 if(maxHeight==null){
-    maxHeight = defaultConfig.maxHeight;
+    maxHeight = parseInt(defaultConfig.maxHeight);
 }
 
 const Nide = require('./nide');
@@ -28,7 +34,8 @@ let option = {
     'mode':mode,
     'cwd':process.cwd(),
     'maxHeight':maxHeight,
-    'defaultFileName':defaultFileName
+    'defaultFileName':defaultFileName,
+    'maxTabsShowed':maxTabsShowed
 };
 
 fs.writeFileSync(__dirname+'/config/config.json',JSON.stringify(option));

@@ -90,6 +90,8 @@ class Nide{
 
         this.defaultFileName = option.defaultFileName;
 
+        this.maxTabsShowed = option.maxTabsShowed;
+
         this.fileName = this.defaultFileName;
 
         this.fileStatus = '*';
@@ -151,6 +153,10 @@ class Nide{
                 }
                 if(key && key.meta && key.name == "j"){
                     app.NewTab();
+                    return;
+                }
+                if(key && key.meta && key.name == "n"){
+                    app.RemoveTab(app.currentTabIndex);
                     return;
                 }
 
@@ -462,6 +468,14 @@ class Nide{
         this.ReprintCode();
     }
 
+    RemoveTab(index){
+        if(this.tabs.length>1){
+            this.tabs.splice(index,1);
+            this.currentTabIndex = clamp(this.currentTabIndex,0,this.tabs.length-1);
+            this.OpenTab(this.currentTabIndex);
+        }
+    }
+
     NewTab(index){
 
         let newTab = {
@@ -700,23 +714,52 @@ class Nide{
 
         let tabFileNames = '';
 
-        for(let i=0;i< this.tabs.length;i++){
+        let startI = this.currentTabIndex;
+
+        let endI = this.tabs.length-1;
+
+        if(this.tabs.length - this.currentTabIndex < this.maxTabsShowed){
+            startI = clamp(this.tabs.length-this.maxTabsShowed,0,this.tabs.length-1);
+        }
+
+        if(endI - startI + 1 > this.maxTabsShowed){
+            endI = clamp(startI+this.maxTabsShowed-1,0,this.tabs.length-1);
+        }
+
+        for(let i=startI;(i<=endI);i++){
             let tab = this.tabs[i];
 
             if(this.currentTabIndex == i){
-                tabFileNames+='\x1b[32m\x1b[1m'+(tab.fileName)+'\x1b[0m';
+                tabFileNames+='\x1b[32m\x1b[1m['+(tab.fileName)+']\x1b[0m';
             }
             else{
-                tabFileNames+=(tab.fileName);
+                tabFileNames+=`[${tab.fileName}]`;
             }
 
-            if(i != this.tabs.length-1){
-                tabFileNames+='] [';
+            if(!(i == endI)){
+                tabFileNames+=' ';
             }
 
         }
 
-        return `>  [${tabFileNames}]`;
+
+        tabFileNames = `${tabFileNames}`;
+
+        if(startI==0){
+           tabFileNames = '\x1b[0m'+tabFileNames;
+        }
+        else{
+           tabFileNames = '\x1b[30m\x1b[1m...\x1b[0m'+tabFileNames;
+        }
+
+        if(endI==this.tabs.length-1){
+           tabFileNames += '\x1b[0m';
+        }
+        else{
+           tabFileNames += '\x1b[30m\x1b[1m...\x1b[0m';
+        }
+
+        return `>  ${tabFileNames}`;
     }
 
     AddCoderHeader(code){
