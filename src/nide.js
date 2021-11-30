@@ -387,9 +387,9 @@ class Nide{
         }
         else if(this.lang == 'py'){
 
-            let cacheFilePath = this.cwd + '/nide_code.py';
+            let cacheFilePath = this.cwd + '/' + this.fileName;//'/nide_code.py';
 
-            fs.writeFileSync(cacheFilePath,compiledCode);
+            //fs.writeFileSync(cacheFilePath,compiledCode);
             
             this.lastFileOpenedCode = this.code;
         
@@ -399,7 +399,7 @@ class Nide{
                 
             process.stdout.write('\x1b[36mRun:\x1b[37m\n');
 
-            child_process.exec('py "'+cacheFilePath+'"', (err, stdout, stderr) => {
+            child_process.exec('start cmd.exe /k py "'+cacheFilePath+'"',{cwd:this.cwd}, (err, stdout, stderr) => {
                 if (err) {
                     console.log(`${err}`);
                     return;
