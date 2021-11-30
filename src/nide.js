@@ -163,12 +163,12 @@ class Nide{
                 }
 
                 if(key && key.name == "up"){
-                    
+                    app.Up();
                     return;
                 }
 
                 if(key && key.name == "down"){
-                    
+                    app.Down();
                     return;
                 }
 
@@ -432,6 +432,38 @@ class Nide{
 
     Right(){
         this.cursor = clamp(this.cursor+1,0,this.code.length);
+
+        this.ReprintCode();
+    }
+
+    Up(){
+
+        let newCursor = this.cursor-1;
+
+        for(let i = newCursor; i>=0; i--){
+            if(this.code[i]=='\n'){
+                newCursor=i;
+                break;
+            }
+        }
+
+        this.cursor=clamp(newCursor,0,this.code.length);
+
+        this.ReprintCode();
+    }
+
+    Down(){
+
+        let newCursor = this.cursor+1;
+
+        for(let i = newCursor; i<this.code.length; i++){
+            if(this.code[i]=='\n'){
+                newCursor=i;
+                break;
+            }
+        }
+
+        this.cursor=clamp(newCursor,0,this.code.length);
 
         this.ReprintCode();
     }
