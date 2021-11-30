@@ -655,15 +655,6 @@ class Nide{
         eI = clamp(eI,0,lines.length-1);
 
 
-        if(eI - bI + 1 < this.maxHeight){
-            bI = (eI - this.maxHeight + 5);
-        }
-
-
-        bI = clamp(bI,0,lines.length-1);
-        eI = clamp(eI,0,lines.length-1);
-
-
         for(let i=bI;i<=eI;i++){
 
             newCode+=(lines[i]);
