@@ -1,6 +1,6 @@
 module.exports = (args)=>{
     return `
-        nide.ChangeLang('js');
+        nide.ChangeMode('js');
         nide.CF(${args[1]});
         nide.OpenFile(${args[1]});
         nide.ReprintCode();

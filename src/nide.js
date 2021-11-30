@@ -82,7 +82,7 @@ class Nide{
 
         this.maxHeight = option.maxHeight;
 
-        this.lang = option.lang;
+        this.mode = option.mode;
 
         this.cwd = option.cwd;
 
@@ -118,7 +118,7 @@ class Nide{
                     return;
                 }
                 if(key && key.meta && key.name == "o"){
-                    app.ChangeLang('nide');
+                    app.ChangeMode('default');
                     app.code='';
                     app.ReprintCode();
                     return;
@@ -224,8 +224,8 @@ class Nide{
         this.ReprintCode();
     }
 
-    ChangeLang(lang){
-        this.lang = lang;
+    ChangeMode(mode){
+        this.mode = mode;
     }
 
     Start(){
@@ -242,7 +242,7 @@ class Nide{
     CompileCode(code){
         let compiledCode = '';
 
-        if(this.lang == 'js'){
+        if(this.mode == 'js'){
             compiledCode = `
                 return ((nide)=>{  
 
@@ -251,10 +251,10 @@ class Nide{
                 });
             `;
         }
-        else if(this.lang == 'py'){
+        else if(this.mode == 'py'){
             compiledCode = `${code}`;
         }
-        else if(this.lang == 'nide'){
+        else if(this.mode == 'default'){
 
             let lines = code.split('\n');
 
@@ -367,7 +367,7 @@ class Nide{
         
         let compiledCode = this.CompileCode(this.code);
 
-        if(this.lang == 'js'){
+        if(this.mode == 'js'){
             try{
                 let func = Function(compiledCode)();
                 
@@ -375,7 +375,7 @@ class Nide{
         
                 console.clear();
         
-                process.stdout.write('\x1b[33mLANG: \x1b[32m'+this.lang+'\x1b[37m\n\n');
+                process.stdout.write(this.AddCoderHeader(''));
                 
                 process.stdout.write('\x1b[36mRun:\x1b[37m\n');
         
@@ -385,7 +385,7 @@ class Nide{
                 console.error(err);
             }
         }
-        else if(this.lang == 'py'){
+        else if(this.mode == 'py'){
 
             let cacheFilePath = this.cwd + '/' + this.fileName;//'/nide_code.py';
 
@@ -395,7 +395,7 @@ class Nide{
         
             console.clear();
         
-            process.stdout.write('\x1b[33mLANG: \x1b[32m'+this.lang+'\x1b[37m\n\n');
+            process.stdout.write('\x1b[33mMODE: \x1b[32m'+this.mode+'\x1b[37m\n\n');
                 
             process.stdout.write('\x1b[36mRun:\x1b[37m\n');
 
@@ -409,7 +409,7 @@ class Nide{
             });
 
         }
-        else if(this.lang == 'nide'){
+        else if(this.mode == 'default'){
             try{
                 let func = Function(compiledCode)();
                 
@@ -581,44 +581,25 @@ class Nide{
 
 
 
-
-        // let maxSpaces = 6;
-
-        // coloredCode = spaces(maxSpaces)+'0 '+'|'+coloredCode;
-
         let newCode = withLineIndicesCode(coloredCode,6);
 
-        // let cursorLineLevel = 0;
-
-        // let lineLevel = 0;
-
-        // for(let i = 0;i<coloredCode.length;i++){
-        //     let c = coloredCode[i];
-        //     newCode += c;
-
-        //     if(c == '\n'){
-        //         lineLevel++;
-        //         newCode += '\x1b[40m' + spaces(maxSpaces - lineLevel.toString().length + 1) + lineLevel + ' |\x1b[40m';
-        //     }
-
-        // }
-        //▶
 
         newCode = this.OptimizeCode(newCode);
 
-        newCode = '  \x1b[36mFILE NAME \x1b[0m \x1b[37m:  \x1b[33m'+this.fileName+'\x1b[37m'+this.fileStatus+'\n\n\n' + newCode;
-        newCode = '  \x1b[36mCWD       \x1b[0m \x1b[37m:  \x1b[33m'+this.cwd+'\x1b[37m\n' + newCode;
-        newCode = '  \x1b[36mLANG      \x1b[0m \x1b[37m:  \x1b[33m'+this.lang+'\x1b[37m\n' + newCode;
+        newCode = this.AddCoderHeader(newCode);
         
-        //newCode = addFileExplorer(newCode);
-        
-        //process.stdout.write('> \x1b[33mLANG      \x1b[37m: \x1b[32m'+this.lang+'\x1b[37m\n');
-        //process.stdout.write('> \x1b[33mCWD       \x1b[37m: \x1b[32m'+this.cwd+'\x1b[37m\n');
-        //process.stdout.write('> \x1b[33mFILE NAME \x1b[37m: \x1b[32m'+this.fileName+'\x1b[37m'+this.fileStatus+'\n\n');
 
         this.WriteLines(newCode);
 
         this.console.HideCursor();
+    }
+
+    AddCoderHeader(code){
+        let newCode = code;
+        newCode = '\x1b[36mFILE NAME \x1b[0m \x1b[37m:  \x1b[33m'+this.fileName+'\x1b[37m'+this.fileStatus+'\n\n\n' + newCode;
+        newCode = '\x1b[36mCWD       \x1b[0m \x1b[37m:  \x1b[33m'+this.cwd+'\x1b[37m\n' + newCode;
+        newCode = '\x1b[36mMODE      \x1b[0m \x1b[37m:  \x1b[33m'+this.mode+'\x1b[37m\n' + newCode;
+        return newCode;
     }
 
     OptimizeCode(code){

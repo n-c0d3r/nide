@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
-let lang = process.argv[2];
+let mode = process.argv[2];
 
-if(lang==null){
-    lang = 'nide';
+if(mode==null){
+    mode = 'default';
 }
 
 let maxHeight = process.argv[3];
@@ -15,7 +15,7 @@ if(maxHeight==null){
 const Nide = require('./nide');
 
 let option = {
-    'lang':lang,
+    'mode':mode,
     'cwd':process.cwd(),
     'maxHeight':maxHeight
 };
