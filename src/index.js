@@ -8,6 +8,12 @@ if(mode==null){
     mode = defaultConfig.mode;
 }
 
+let defaultFileName = process.argv[4];
+
+if(defaultFileName==null){
+    defaultFileName = defaultConfig.defaultFileName;
+}
+
 let maxHeight = process.argv[3];
 
 if(maxHeight==null){
@@ -21,7 +27,8 @@ const fs = require('fs');
 let option = {
     'mode':mode,
     'cwd':process.cwd(),
-    'maxHeight':maxHeight
+    'maxHeight':maxHeight,
+    'defaultFileName':defaultFileName
 };
 
 fs.writeFileSync(__dirname+'/config/config.json',JSON.stringify(option));

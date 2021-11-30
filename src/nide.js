@@ -88,7 +88,9 @@ class Nide{
 
         this.lastFileOpenedCode = '';
 
-        this.fileName = 'document.txt';
+        this.defaultFileName = option.defaultFileName;
+
+        this.fileName = this.defaultFileName;
 
         this.fileStatus = '*';
 
@@ -100,6 +102,17 @@ class Nide{
         this.selectedBIndex=-1;
         this.selectedEIndex=-1;
 
+        this.tabs = [];
+
+        this.currentTabIndex = 0;
+
+        this.tabs[0] = {
+            'cursor': this.cursor,
+            'code': this.code,
+            'fileName': this.fileName,
+            'mode': this.mode,
+            'cwd': this.cwd
+        };
 
         this.console = new Console();
 
@@ -130,6 +143,14 @@ class Nide{
                 if(key && key.meta && key.name == "m"){
                     app.code = app.lastFileOpenedCode;
                     app.ReprintCode();
+                    return;
+                }
+                if(key && key.meta && key.name == "i"){
+                    app.OpenTab(app.currentTabIndex+1);
+                    return;
+                }
+                if(key && key.meta && key.name == "j"){
+                    app.NewTab();
                     return;
                 }
 
@@ -424,6 +445,39 @@ class Nide{
 
     }
 
+    OpenTab(index){
+
+        if(index>this.tabs.length-1){
+            this.currentTabIndex = index - this.tabs.length;
+        }
+        else
+            this.currentTabIndex = index;
+
+        this.cwd = this.tabs[this.currentTabIndex].cwd;
+        this.code = this.tabs[this.currentTabIndex].code;
+        this.mode = this.tabs[this.currentTabIndex].mode;
+        this.fileName = this.tabs[this.currentTabIndex].fileName;
+        this.cursor = this.tabs[this.currentTabIndex].cursor;
+
+        this.ReprintCode();
+    }
+
+    NewTab(index){
+
+        let newTab = {
+            'cursor': 0,
+            'code': '',
+            'fileName': this.defaultFileName,
+            'mode': this.mode,
+            'cwd': this.cwd
+        };
+
+        this.tabs.push(newTab);
+
+        this.OpenTab(this.tabs.length-1);
+
+    }
+
     Left(){
         this.cursor = clamp(this.cursor-1,0,this.code.length);
 
@@ -566,6 +620,22 @@ class Nide{
         console.clear();
         this.console.HideCursor();
 
+        /*
+            this.tabs[0] = {
+            'cursor': this.cursor,
+            'code': this.code,
+            'fileName': this.fileName,
+            'mode': this.mode,
+            'cwd': this.cwd
+        };
+        */
+
+        this.tabs[this.currentTabIndex].cwd = this.cwd;
+        this.tabs[this.currentTabIndex].code = this.code;
+        this.tabs[this.currentTabIndex].mode = this.mode;
+        this.tabs[this.currentTabIndex].fileName = this.fileName;
+        this.tabs[this.currentTabIndex].cursor = this.cursor;
+
         let coloredCode = this.code;
 
         if(option==null)
@@ -626,11 +696,35 @@ class Nide{
         this.console.HideCursor();
     }
 
+    TabsString(){
+
+        let tabFileNames = '';
+
+        for(let i=0;i< this.tabs.length;i++){
+            let tab = this.tabs[i];
+
+            if(this.currentTabIndex == i){
+                tabFileNames+='\x1b[32m\x1b[1m'+(tab.fileName)+'\x1b[0m';
+            }
+            else{
+                tabFileNames+=(tab.fileName);
+            }
+
+            if(i != this.tabs.length-1){
+                tabFileNames+='] [';
+            }
+
+        }
+
+        return `>  [${tabFileNames}]`;
+    }
+
     AddCoderHeader(code){
         let newCode = code;
-        newCode = '\x1b[36mFILE NAME \x1b[0m \x1b[37m:  \x1b[33m'+this.fileName+'\x1b[37m'+this.fileStatus+'\n\n\n' + newCode;
-        newCode = '\x1b[36mCWD       \x1b[0m \x1b[37m:  \x1b[33m'+this.cwd+'\x1b[37m\n' + newCode;
-        newCode = '\x1b[36mMODE      \x1b[0m \x1b[37m:  \x1b[33m'+this.mode+'\x1b[37m\n' + newCode;
+        newCode = '\n' + this.TabsString() + '\n\n' + newCode;
+        newCode = '>  \x1b[36mFILE NAME \x1b[0m :  \x1b[33m'+this.fileName+'\x1b[37m'+this.fileStatus+'\n' + newCode;
+        newCode = '>  \x1b[36mCWD       \x1b[0m :  \x1b[33m'+this.cwd+'\x1b[37m\n' + newCode;
+        newCode = '>  \x1b[36mMODE      \x1b[0m :  \x1b[33m'+this.mode+'\x1b[37m\n' + newCode;
         return newCode;
     }
 
