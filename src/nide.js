@@ -43,10 +43,44 @@ const withLineIndicesCode = function(coloredCode,maxSpaces){
     return newCode;
 }
 
+const getFileExplorerLine=function(lineLevel){
+    return '';
+}
+
+const addFileExplorer = function(code){
+    let newCode = '';
+
+    let lineLevel = 0;
+
+    newCode+=getFileExplorerLine(lineLevel);
+
+    for(let i = 0; i<code.length; i++){
+
+        let c = code[i];
+
+        if(code[i]=='\n'){
+            lineLevel++;
+
+            newCode += '\n'+getFileExplorerLine(lineLevel);
+
+            continue;
+        }
+
+        newCode+=c;
+
+    }
+
+    return newCode;
+}
+
 class Nide{
     constructor(option){
 
         var app = this;
+
+        this.cursorLineLevel = 0;
+
+        this.height = option.height;
 
         this.lang = option.lang;
 
@@ -305,6 +339,10 @@ class Nide{
             this.code = 'Cant Change Partition!!!';
         }
     }
+    NF(target){
+        let p = this.cwd+'\\'+target;
+        fs.writeFileSync(p,'');
+    }
 
     CF(target){
         this.fileName = target;
@@ -501,23 +539,42 @@ class Nide{
         if(option==null)
             option=new Object();
 
-        let newCursor = 0;
+        this.coloredCursor = 0;
+
+        let cursorLineLevel = 0;
+
+        for(let i = 0;i<this.code.length;i++){
+            let c = this.code[i];
+
+            if(c == '\n'){
+                cursorLineLevel++;
+                
+                if(i>=this.cursor){
+                    break;
+                }
+
+            }
+
+        }
+
+        this.cursorLineLevel = this.cursor;
+
 
         if(!(option.printColoredCode == true)){
             if(this.cursor<this.code.length){
                 if(this.code[this.cursor] == '\n'){
-                    newCursor = (this.code.substring(0,this.cursor) + '\x1b[46m' + ' \x1b[40m').length;
+                    this.coloredCursor = (this.code.substring(0,this.cursor) + '\x1b[46m' + ' \x1b[40m').length;
                     coloredCode = this.code.substring(0,this.cursor) + '\x1b[46m' + ' \x1b[40m' + this.code[this.cursor] + '\x1b[40m' + this.code.substring(this.cursor+1,this.code.length);
                     
                 }
                 else{
-                    newCursor = (this.code.substring(0,this.cursor) + '\x1b[46m').length;
+                    this.coloredCursor = (this.code.substring(0,this.cursor) + '\x1b[46m').length;
                     coloredCode = this.code.substring(0,this.cursor) + '\x1b[46m' + this.code[this.cursor] + '\x1b[40m' + this.code.substring(this.cursor+1,this.code.length);
                     
                 }
             }
             else{
-                newCursor = (this.code.substring(0,this.code.length) + '\x1b[46m').length;
+                this.coloredCursor = (this.code.substring(0,this.code.length) + '\x1b[46m').length;
                 coloredCode = this.code.substring(0,this.code.length) + '\x1b[46m' + ' ' + '\x1b[40m';
             }
         }
@@ -545,16 +602,81 @@ class Nide{
         //     }
 
         // }
-        
+        //▶
 
-        
-        process.stdout.write('\x1b[33mLANG      : \x1b[32m'+this.lang+'\x1b[37m\n\n');
-        process.stdout.write('\x1b[33mCWD       : \x1b[32m'+this.cwd+'\x1b[37m\n\n');
-        process.stdout.write('\x1b[33mFILE NAME : \x1b[32m'+this.fileName+'\x1b[37m'+this.fileStatus+'\n\n');
+        newCode = this.OptimizeCode(newCode);
 
-        process.stdout.write(newCode);
+        newCode = '  \x1b[36mFILE NAME \x1b[0m \x1b[37m:  \x1b[33m'+this.fileName+'\x1b[37m'+this.fileStatus+'\n\n\n' + newCode;
+        newCode = '  \x1b[36mCWD       \x1b[0m \x1b[37m:  \x1b[33m'+this.cwd+'\x1b[37m\n' + newCode;
+        newCode = '  \x1b[36mLANG      \x1b[0m \x1b[37m:  \x1b[33m'+this.lang+'\x1b[37m\n' + newCode;
+        
+        //newCode = addFileExplorer(newCode);
+        
+        //process.stdout.write('> \x1b[33mLANG      \x1b[37m: \x1b[32m'+this.lang+'\x1b[37m\n');
+        //process.stdout.write('> \x1b[33mCWD       \x1b[37m: \x1b[32m'+this.cwd+'\x1b[37m\n');
+        //process.stdout.write('> \x1b[33mFILE NAME \x1b[37m: \x1b[32m'+this.fileName+'\x1b[37m'+this.fileStatus+'\n\n');
+
+        this.WriteLines(newCode);
 
         this.console.HideCursor();
+    }
+
+    OptimizeCode(code){
+
+        let lines = code.split('\n');
+
+        let newCode = '';
+
+        let lastLineIndex = -1;
+
+        let cursorLineLevel = this.cursorLineLevel;
+
+        let bI = 0;
+        let eI = lines.length-1;
+
+        let halfHeight1 = parseInt(this.height/2);
+        let halfHeight2 = this.height-halfHeight1;
+
+        
+        eI = cursorLineLevel+halfHeight1;
+        bI = cursorLineLevel-halfHeight2+1;
+
+
+        bI = clamp(bI,0,lines.length-1);
+
+        eI = clamp(eI,0,lines.length-1);
+
+        for(let i=bI;i<=eI;i++){
+
+            newCode+=(lines[i]);
+
+            if(i!=eI){
+                newCode+=('\n');
+            }
+
+        }
+
+        return newCode;
+    }
+
+    WriteLines(code){
+
+        let lines = code.split('\n');
+
+        for(let i=0;i<lines.length;i++){
+
+            process.stdout.write(lines[i]);
+
+            if(i!=lines.length-1){
+                process.stdout.write('\n');
+            }
+
+            if(i==this.height){
+                break;
+            }
+
+        }
+
     }
 
 }
