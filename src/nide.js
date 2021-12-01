@@ -161,6 +161,10 @@ class Nide{
                     app.OpenTab(app.currentTabIndex+1);
                     return;
                 }
+                if(key && key.meta && key.name == "g"){
+                    app.NextMode();
+                    return;
+                }
                 if(key && key.meta && key.name == "j"){
                     app.NewTab({
                         'cursor': 0,
@@ -276,6 +280,28 @@ class Nide{
         
         this.Clear();
 
+    }
+
+    NextMode(){
+        let i = 0;
+
+        for(;i<this.modes.length;i++){
+            if(this.modes[i]==this.mode){
+                break;
+            }
+        }
+
+        i++;
+
+        if(this.modes.length == i){
+            i = 0;
+        }
+
+        if(this.modes[i]!='fexp' && this.mode!='fexp'){
+            this.ChangeMode(this.modes[i]);
+    
+            this.ReprintCode();
+        }
     }
 
     Exit(){
