@@ -265,8 +265,38 @@ class Nide{
 
     }
 
+    ConvertToWindowsEOL(code){
+        let result = '';
+
+        for(let c of code){
+            if(c=='\n'){
+                result+='\r\n';
+            }
+            else{
+                result+=c;
+            }
+        }
+
+        return result;
+    }
+
+    ConvertToSimpleEOL(code){
+        let result = '';
+
+        for(let c of code){
+            if(c=='\r'){
+                result+='';
+            }
+            else{
+                result+=c;
+            }
+        }
+
+        return result;
+    }
+
     SaveFile(){
-        fs.writeFileSync(path.join(this.cwd,this.fileName),this.code);
+        fs.writeFileSync(path.join(this.cwd,this.fileName),this.ConvertToWindowsEOL(this.code));
         this.lastFileOpenedCode = this.code;
         this.fileStatus = '';
         this.ReprintCode();
@@ -426,7 +456,7 @@ class Nide{
         let fullPath = path.join(this.cwd,name);
         if(fs.existsSync(fullPath)){
             
-            this.code = fs.readFileSync(fullPath).toString();
+            this.code = this.ConvertToSimpleEOL(fs.readFileSync(fullPath).toString());
 
             this.lastFileOpenedCode = this.code;
 
@@ -442,7 +472,7 @@ class Nide{
         console.log(fullPath);
         if(fs.existsSync(fullPath)){
             
-            this.code = fs.readFileSync(fullPath).toString();
+            this.code = this.ConvertToSimpleEOL(fs.readFileSync(fullPath).toString());
 
             this.lastFileOpenedCode = this.code;
 
