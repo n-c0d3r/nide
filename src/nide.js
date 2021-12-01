@@ -438,6 +438,24 @@ class Nide{
         );
     }
 
+    ExecCMDCommand_InAnotherWindow(command){
+        console.log(`\n`);
+        child_process.exec(
+            'start cmd.exe /k '+command, 
+            {
+                cwd: this.cwd
+            },
+            (err, stdout, stderr) => {
+                if (err) {
+                    console.log(`${err}`);
+                    return;
+                }
+
+                console.log(`${stdout}`);
+            }
+        );
+    }
+
     CD(target){
         let p = path.join(this.cwd,target);
         if(fs.existsSync(p)){
