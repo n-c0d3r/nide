@@ -734,6 +734,10 @@ class Nide{
         function loadFilesTree(itemPath){
             let name = path.basename(path.normalize(itemPath));
 
+            if(name==''){
+                name = itemPath
+            }
+
             let result = {
                 'path':path.normalize(itemPath),
                 'name':name,
@@ -748,9 +752,14 @@ class Nide{
                 if(app.FEXP_openedItems[result.path])
                     for(let item of items){
         
-                        let newChild = loadFilesTree(path.join(itemPath,item));
-        
-                        result.childs.push(newChild);
+                        try{
+                            let newChild = loadFilesTree(path.join(itemPath,item));
+            
+                            result.childs.push(newChild);
+                        }
+                        catch{
+                            
+                        }
         
                     }
 
