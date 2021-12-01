@@ -361,23 +361,33 @@ class Nide{
     }
 
     NextMode(){
-        let i = 0;
 
-        for(;i<this.modes.length;i++){
-            if(this.modes[i]==this.mode){
-                break;
+        if (this.mode!='fexp'){
+            let i = 0;
+
+            for(;i<this.modes.length;i++){
+                if(this.modes[i]==this.mode){
+                    break;
+                }
             }
-        }
 
-        i++;
+            let j=i;
 
-        if(this.modes.length == i){
-            i = 0;
-        }
+            j++;
 
-        if(this.modes[i]!='fexp' && this.mode!='fexp'){
-            this.ChangeMode(this.modes[i]);
+            if(this.modes.length == j){
+                j = 0;
+            }
+
+            while(this.modes[j]=='fexp' || this.mode[j]==this.modes[i]){
+                j++;
+                if(this.modes.length == j){
+                    j = 0;
+                }
+            }    
     
+            this.ChangeMode(this.modes[j]);
+        
             this.ReprintCode();
         }
     }
