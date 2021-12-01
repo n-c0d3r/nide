@@ -19,15 +19,19 @@ const spaces = function(count){
     return r;
 }
 
-const withLineIndicesCode = function(coloredCode,maxSpaces){
+const withLineIndicesCode = function(coloredCode,maxSpaces,cursorLineLevel){
 
-    coloredCode = spaces(maxSpaces)+'0 '+'|'+coloredCode;
 
     let newCode = '';
 
-    let cursorLineLevel = 0;
-
     let lineLevel = 0;
+
+    if(cursorLineLevel != lineLevel){
+        coloredCode = '\x1b[30m\x1b[1m'+spaces(maxSpaces)+'0 '+'|\x1b[0m'+coloredCode;
+    }
+    else{
+        coloredCode = '\x1b[35m'+spaces(maxSpaces)+'0 '+'\x1b[0m|\x1b[0m\x1b[45m\x1b[30m'+coloredCode;
+    }
 
     for(let i = 0;i<coloredCode.length;i++){
         let c = coloredCode[i];
@@ -35,7 +39,12 @@ const withLineIndicesCode = function(coloredCode,maxSpaces){
 
         if(c == '\n'){
             lineLevel++;
-            newCode += '\x1b[40m' + spaces(maxSpaces - lineLevel.toString().length + 1) + lineLevel + ' |\x1b[40m';
+            if(cursorLineLevel != lineLevel){
+                newCode += '\x1b[30m\x1b[1m' + spaces(maxSpaces - lineLevel.toString().length + 1) + lineLevel + ' |\x1b[0m';
+            }
+            else{
+                newCode += '\x1b[35m' + spaces(maxSpaces - lineLevel.toString().length + 1) + lineLevel + ' \x1b[0m|\x1b[0m\x1b[45m\x1b[30m';
+            }
         }
 
     }
@@ -731,32 +740,32 @@ class Nide{
 
         let newCursor = this.cursor-1;
 
-        if(this.mode=='fexp'){
-            let t = false;
-            while(this.code[newCursor] == '>' || this.code[newCursor] == '<' || t){
-                if(this.code[newCursor] == '>'){
-                    t = true;
-                }
-                if(t && this.code[newCursor]=='<'){
-                    t = false;
-                }
-                newCursor--;
-            }
-        }
+        // if(this.mode=='fexp'){
+        //     let t = false;
+        //     while(this.code[newCursor] == '>' || this.code[newCursor] == '<' || t){
+        //         if(this.code[newCursor] == '>'){
+        //             t = true;
+        //         }
+        //         if(t && this.code[newCursor]=='<'){
+        //             t = false;
+        //         }
+        //         newCursor--;
+        //     }
+        // }
 
         for(let i = newCursor; i>=0; i--){
-            if(this.mode=='fexp'){
-                let t2 = false;
-                while(this.code[i] == '>' || this.code[i] == '<' || t2){
-                    if(this.code[i] == '>'){
-                        t2 = true;
-                    }
-                    if(t2 && this.code[i]=='<'){
-                        t2 = false;
-                    }
-                    i--;
-                }
-            }
+            // if(this.mode=='fexp'){
+            //     let t2 = false;
+            //     while(this.code[i] == '>' || this.code[i] == '<' || t2){
+            //         if(this.code[i] == '>'){
+            //             t2 = true;
+            //         }
+            //         if(t2 && this.code[i]=='<'){
+            //             t2 = false;
+            //         }
+            //         i--;
+            //     }
+            // }
             if(this.code[i]=='\n'){
                 newCursor=i;
                 break;
@@ -772,35 +781,35 @@ class Nide{
 
         let newCursor = this.cursor+1;
 
-        if(this.mode=='fexp'){
-            let t = false;
-            while(this.code[newCursor] == '<' || this.code[newCursor] == '>' || t){
-                if(this.code[newCursor] == '<'){
-                    t = true;
-                }
-                if(t && this.code[newCursor]=='>'){
-                    t = false;
-                }
-                newCursor++;
-            }
-        }
+        // if(this.mode=='fexp'){
+        //     let t = false;
+        //     while(this.code[newCursor] == '<' || this.code[newCursor] == '>' || t){
+        //         if(this.code[newCursor] == '<'){
+        //             t = true;
+        //         }
+        //         if(t && this.code[newCursor]=='>'){
+        //             t = false;
+        //         }
+        //         newCursor++;
+        //     }
+        // }
 
         for(let i = newCursor; i<this.code.length; i++){
-            if(this.mode=='fexp'){
-                let t2 = false;
-                while(this.code[i] == '<' || this.code[i] == '>' || t2){
-                    if(this.code[i] == '<'){
-                        t2 = true;
-                    }
-                    if(t2 && this.code[i]=='>'){
-                        t2= false;
-                    }
-                    i++;
-                }
-                if(this.code[i]=='\n'){
-                    newCursor=i;
-                    break;
-                }
+            // if(this.mode=='fexp'){
+            //     let t2 = false;
+            //     while(this.code[i] == '<' || this.code[i] == '>' || t2){
+            //         if(this.code[i] == '<'){
+            //             t2 = true;
+            //         }
+            //         if(t2 && this.code[i]=='>'){
+            //             t2= false;
+            //         }
+            //         i++;
+            //     }
+            // }
+            if(this.code[i]=='\n'){
+                newCursor=i;
+                break;
             }
         }
 
@@ -1077,35 +1086,48 @@ class Nide{
         if(option==null)
             option=new Object();
 
-        this.coloredCursor = 0;
 
         this.RecalculateCursorLevel();
 
 
+        // if(!(option.printColoredCode == true)){
+        //     if(this.cursor<this.code.length){
+        //         if(this.code[this.cursor] == '\n'){
+        //             coloredCode = this.code.substring(0,this.cursor) + '\x1b[46m' + ' \x1b[40m' + this.code[this.cursor] + '\x1b[40m' + this.code.substring(this.cursor+1,this.code.length);
+                    
+        //         }
+        //         else{
+        //             coloredCode = this.code.substring(0,this.cursor) + '\x1b[46m' + this.code[this.cursor] + '\x1b[40m' + this.code.substring(this.cursor+1,this.code.length);
+                    
+        //         }
+        //     }
+        //     else{
+        //         coloredCode = this.code.substring(0,this.code.length) + '\x1b[46m' + ' ' + '\x1b[40m';
+        //     }
+        // }
+
         if(!(option.printColoredCode == true)){
             if(this.cursor<this.code.length){
                 if(this.code[this.cursor] == '\n'){
-                    this.coloredCursor = (this.code.substring(0,this.cursor) + '\x1b[46m' + ' \x1b[40m').length;
-                    coloredCode = this.code.substring(0,this.cursor) + '\x1b[46m' + ' \x1b[40m' + this.code[this.cursor] + '\x1b[40m' + this.code.substring(this.cursor+1,this.code.length);
+                    coloredCode = this.code.substring(0,this.cursor) + '\x1b[46m' + ' \x1b[45m\x1b[30m' + this.code[this.cursor] + '' + this.code.substring(this.cursor+1,this.code.length);
                     
                 }
                 else{
-                    this.coloredCursor = (this.code.substring(0,this.cursor) + '\x1b[46m').length;
-                    coloredCode = this.code.substring(0,this.cursor) + '\x1b[46m' + this.code[this.cursor] + '\x1b[40m' + this.code.substring(this.cursor+1,this.code.length);
+                    coloredCode = this.code.substring(0,this.cursor) + '\x1b[46m' + this.code[this.cursor] + '\x1b[45m\x1b[30m' + this.code.substring(this.cursor+1,this.code.length);
                     
                 }
             }
             else{
-                this.coloredCursor = (this.code.substring(0,this.code.length) + '\x1b[46m').length;
-                coloredCode = this.code.substring(0,this.code.length) + '\x1b[46m' + ' ' + '\x1b[40m';
+                coloredCode = this.code.substring(0,this.code.length) + '\x1b[46m' + ' ' + '\x1b[45m\x1b[30m';
             }
         }
+
 
         if(this.mode == 'fexp'){
             //coloredCode = this.CompileColorSyntax(coloredCode);
         }
 
-        let newCode = withLineIndicesCode(coloredCode,6);
+        let newCode = withLineIndicesCode(coloredCode,6,this.cursorLineLevel);
 
         newCode = this.AddFileExplorer(newCode);
 
@@ -1173,10 +1195,10 @@ class Nide{
 
     AddCoderHeader(code){
         let newCode = code;
-        newCode = '\n' + this.TabsString() + '\n\n' + newCode;
-        newCode = '>  \x1b[36mFILE NAME \x1b[0m :  \x1b[33m'+this.fileName+'\x1b[37m'+this.fileStatus+'\n' + newCode;
+        newCode = '>  \x1b[36mFILE NAME \x1b[0m :  \x1b[33m'+this.fileName+'\x1b[37m'+this.fileStatus+'\n\n' + newCode;
         newCode = '>  \x1b[36mCWD       \x1b[0m :  \x1b[33m'+this.cwd+'\x1b[37m\n' + newCode;
         newCode = '>  \x1b[36mMODE      \x1b[0m :  \x1b[33m'+this.mode+'\x1b[37m\n' + newCode;
+        newCode = '\n' + this.TabsString() + '\n\n' + newCode;
         return newCode;
     }
 
@@ -1266,10 +1288,14 @@ class Nide{
             process.stdout.write(lines[i]);
 
             if(i!=lines.length-1){
-                process.stdout.write('\n');
+                process.stdout.write('\n\x1b[0m');
+            }
+            else{
+                process.stdout.write('\x1b[0m');
             }
 
             if(i==this.maxHeight){
+                process.stdout.write('\x1b[0m');
                 break;
             }
 
