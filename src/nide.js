@@ -165,9 +165,9 @@ class Nide{
                     app.NewTab({
                         'cursor': 0,
                         'code': '',
-                        'fileName': this.defaultFileName,
-                        'mode': this.mode,
-                        'cwd': this.cwd
+                        'fileName': app.defaultFileName,
+                        'mode': app.mode,
+                        'cwd': app.cwd
                     });
                     return;
                 }
