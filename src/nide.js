@@ -165,6 +165,11 @@ class Nide{
                     app.NextMode();
                     return;
                 }
+                if(key && key.meta && key.name == "d"){
+                    app.OpenFile(app.fileName);
+                    app.ReprintCode();
+                    return;
+                }
                 if(key && key.meta && key.name == "j"){
                     app.NewTab({
                         'cursor': 0,
@@ -254,6 +259,14 @@ class Nide{
         this.code = '';
 
         this.LoadPlugins();
+    }
+
+    GetTabsFiles(){
+        let result = [];
+        for(let tab of this.tabs){
+            result.push(path.normalize(path.join(tab.cwd,tab.fileName)));
+        }
+        return result;
     }
 
     LoadPlugins(){
@@ -469,7 +482,9 @@ class Nide{
     OpenFile_FULLPATH(fullPath){
         this.cwd = path.dirname(fullPath);
         this.fileName = path.basename(fullPath);
-        console.log(fullPath);
+        
+
+
         if(fs.existsSync(fullPath)){
             
             this.code = this.ConvertToSimpleEOL(fs.readFileSync(fullPath).toString());
@@ -504,19 +519,38 @@ class Nide{
 
                 let filePath = this.FEXP_lines[this.cursorLineLevel];
 
-                this.NewTab({
-                    'cursor': 0,
-                    'code': '',
-                    'fileName': path.basename(filePath),
-                    'mode': this.mode,
-                    'cwd': path.dirname(filePath)
-                });
+                let tabFiles = this.GetTabsFiles();
 
-                this.ChangeMode('default');
+                let isOpened = false;
 
-                this.OpenFile_FULLPATH(filePath);
+                let i=0;
 
-                this.ReprintCode();
+                for(;i<tabFiles.length;i++){
+                    let tabFile = tabFiles[i];
+                    if(tabFile == path.normalize(filePath)){
+                        isOpened = true;
+                        break;
+                    }
+                }
+
+                if(isOpened){
+                    this.OpenTab(i);
+                }
+                else{
+                    this.NewTab({
+                        'cursor': 0,
+                        'code': '',
+                        'fileName': path.basename(filePath),
+                        'mode': this.mode,
+                        'cwd': path.dirname(filePath)
+                    });
+    
+                    this.ChangeMode('default');
+    
+                    this.OpenFile_FULLPATH(filePath);
+    
+                    this.ReprintCode();
+                }
 
             }
 
