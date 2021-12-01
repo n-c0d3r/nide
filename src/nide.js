@@ -204,6 +204,11 @@ class Nide{
                     return;
                 }
 
+                if(key && key.meta && key.name == "f"){
+                    app.ReloadConfig();
+                    return;
+                }
+
                 if(key && key.name == "backspace"){
                     app.Backspace();
                     return;
@@ -267,6 +272,8 @@ class Nide{
 
         this.code = '';
 
+        this.ReloadConfig();
+
         this.LoadPlugins();
     }
 
@@ -285,6 +292,19 @@ class Nide{
             (require('./plugins/'+plugin))(this);
         }
 
+    }
+
+    ReloadConfig(){
+        let configPath = path.join(this.cwd,'.nide','config.json');
+        if(fs.existsSync(configPath)){
+
+            let config = JSON.parse(fs.readFileSync(configPath).toString());
+
+            this.defaultFileName = config.defaultFileName;
+            this.maxHeight = config.maxHeight;
+            this.maxTabsShowed = config.maxTabsShowed;
+
+        }
     }
 
     ConvertToWindowsEOL(code){
