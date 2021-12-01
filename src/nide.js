@@ -1294,10 +1294,10 @@ class Nide{
                 process.stdout.write('\x1b[0m');
             }
 
-            if(i==this.maxHeight){
-                process.stdout.write('\x1b[0m');
-                break;
-            }
+            // if(i==this.maxHeight){
+            //     process.stdout.write('\x1b[0m');
+            //     break;
+            // }
 
         }
 
