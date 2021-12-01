@@ -467,7 +467,8 @@ class Nide{
                 else
                 if(this.FEXP_openedItems[this.FEXP_lines[this.cursorLineLevel]] == true)
                     this.FEXP_openedItems[this.FEXP_lines[this.cursorLineLevel]] = false;
-                this.ReprintCode();
+
+                this.Clear();
             }
             else if(this.FEXP_itemsTypes[this.FEXP_lines[this.cursorLineLevel]] == 'file'){
 
@@ -744,13 +745,15 @@ class Nide{
             if(stat.isDirectory()){
                 let items = fs.readdirSync(itemPath);
 
-                for(let item of items){
-    
-                    let newChild = loadFilesTree(path.join(itemPath,item));
-    
-                    result.childs.push(newChild);
-    
-                }
+                if(app.FEXP_openedItems[result.path])
+                    for(let item of items){
+        
+                        let newChild = loadFilesTree(path.join(itemPath,item));
+        
+                        result.childs.push(newChild);
+        
+                    }
+
                 result.type='folder';
             }
             else{
