@@ -43,9 +43,6 @@ const withLineIndicesCode = function(coloredCode,maxSpaces){
     return newCode;
 }
 
-const getFileExplorerLine=function(lineLevel){
-    return '';
-}
 
 const addFileExplorer = function(code){
     let newCode = '';
@@ -82,6 +79,13 @@ class Nide{
 
         this.maxHeight = option.maxHeight;
 
+        this.modes = [
+            'default',
+            'js',
+            'py',
+            'fexp',
+        ];
+
         this.mode = option.mode;
 
         this.cwd = option.cwd;
@@ -93,6 +97,9 @@ class Nide{
         this.maxTabsShowed = option.maxTabsShowed;
 
         this.fileName = this.defaultFileName;
+
+        this.FEXP_openedItems = new Object();
+        this.FEXP_itemsTypes = new Object();
 
         this.fileStatus = '*';
 
@@ -117,6 +124,9 @@ class Nide{
         };
 
         this.console = new Console();
+
+        if(this.mode == 'fexp')
+            this.LoadFilesTree();
 
         this.console.keypressEventListeners['Nide'] = function(ch,key){
             if(key != null){
@@ -214,7 +224,7 @@ class Nide{
                     return;
                 }
 
-                if(!key.ctrl && !key.meta){
+                if(!key.ctrl && !key.meta && app.mode!='fexp'){
                     if(key.shift){
                         app.AddCode(key.name.toUpperCase());
                     }
@@ -224,7 +234,9 @@ class Nide{
                 }
             }
             else{
-                app.AddCode(ch);
+                if(app.mode!='fexp'){
+                    app.AddCode(ch);
+                }
             }
 
         }
@@ -232,7 +244,6 @@ class Nide{
         this.code = '';
 
         this.LoadPlugins();
-
     }
 
     LoadPlugins(){
@@ -374,6 +385,9 @@ class Nide{
     CF(target){
         this.fileName = target;
         this.fileStatus = '*';
+
+        if(this.mode == 'fexp')
+            this.LoadFilesTree();
     }
 
     OpenFile(name){
@@ -390,8 +404,53 @@ class Nide{
         }
     }
 
+    OpenFile_FULLPATH(fullPath){
+        this.cwd = path.dirname(fullPath);
+        this.fileName = path.basename(fullPath);
+        if(fs.existsSync(fullPath)){
+            
+            this.code = fs.readFileSync(fullPath).toString();
+
+            this.lastFileOpenedCode = this.code;
+
+        }
+        else{
+            this.code = name+' Not Found!!!';
+        }
+    }
+
     RunCode(){
         this.AddToCodeHis(this.code);
+        
+        if(this.mode == 'fexp'){
+            this.RecalculateCursorLevel();
+
+            if(this.FEXP_itemsTypes[this.FEXP_lines[this.cursorLineLevel]] == 'folder'){
+                if(this.FEXP_openedItems[this.FEXP_lines[this.cursorLineLevel]] == null)
+                    this.FEXP_openedItems[this.FEXP_lines[this.cursorLineLevel]] = true;
+                else
+                if(this.FEXP_openedItems[this.FEXP_lines[this.cursorLineLevel]] == false)
+                    this.FEXP_openedItems[this.FEXP_lines[this.cursorLineLevel]] = true;
+                else
+                if(this.FEXP_openedItems[this.FEXP_lines[this.cursorLineLevel]] == true)
+                    this.FEXP_openedItems[this.FEXP_lines[this.cursorLineLevel]] = false;
+                this.ReprintCode();
+            }
+            else if(this.FEXP_itemsTypes[this.FEXP_lines[this.cursorLineLevel]] == 'file'){
+
+
+                this.ChangeMode('default');
+
+                this.OpenFile_FULLPATH(this.FEXP_lines[this.cursorLineLevel]);
+
+                this.ReprintCode();
+
+            }
+
+            return;
+
+        }
+
         
         let compiledCode = this.CompileCode(this.code);
 
@@ -405,7 +464,7 @@ class Nide{
         
                 process.stdout.write(this.AddCoderHeader(''));
                 
-                process.stdout.write('\x1b[36mRun:\x1b[37m\n');
+                process.stdout.write('\n');
         
                 return (func(this));
             }
@@ -626,14 +685,116 @@ class Nide{
     Clear(){
         this.code = '';
 
+        this.LoadFilesTree();
+
         this.AddToCodeHis(this.code);
 
         this.ReprintCode();
     }
 
+    LoadFilesTree(){
+
+        let app = this;
+
+        function loadFilesTree(itemPath){
+            let name = path.basename(path.normalize(itemPath));
+
+            let result = {
+                'path':path.normalize(itemPath),
+                'name':name,
+                'childs':[]
+            }
+
+            let stat = fs.statSync(itemPath);
+
+            if(stat.isDirectory()){
+                let items = fs.readdirSync(itemPath);
+
+                for(let item of items){
+    
+                    let newChild = loadFilesTree(path.join(itemPath,item));
+    
+                    result.childs.push(newChild);
+    
+                }
+                result.type='folder';
+            }
+            else{
+                result.type='file';
+            }
+
+            app.FEXP_itemsTypes[path.normalize(itemPath)] = result.type;
+
+            return result;
+        }
+
+        this.filesTree=loadFilesTree(this.cwd);
+
+    }
+
+    LoadFilesToCode(){
+
+        //this.LoadFilesTree();
+
+        let app = this;
+
+        this.currentFileLevel = 1;
+
+        let maxLevel = this.currentFileLevel;
+
+        let FEXP_lines = [];
+        
+        let GetStrFromItem = function(item,level){
+
+            let childsStr = '';
+
+            FEXP_lines.push(item.path);
+
+            if(level<maxLevel || (app.FEXP_openedItems[path.normalize(item.path)] == true))
+                for(let child of item.childs){
+                    childsStr+=spaces((level+1)*2)+GetStrFromItem(child,level+1);
+                }
+
+            return `${item.name}\n${childsStr}`;
+        }
+
+        let level = 0;
+
+        this.code = (GetStrFromItem(this.filesTree,level));
+
+        app.FEXP_lines = FEXP_lines;
+
+    }
+
+    RecalculateCursorLevel(){
+        let cursorLineLevel = 0;
+
+        for(let i = 0;i<this.code.length;i++){
+            if(i>=this.cursor){
+                break;
+            }
+
+            if(this.code[i] == '\n'){
+                cursorLineLevel++;
+                
+                if(i>=this.cursor){
+                    break;
+                }
+
+            }
+
+        }
+
+        this.cursorLineLevel = cursorLineLevel;
+    }
+
     ReprintCode(option){
         console.clear();
         this.console.HideCursor();
+
+        if(this.mode == 'fexp'){
+            this.LoadFilesToCode();
+        }
 
         /*
             this.tabs[0] = {
@@ -658,23 +819,7 @@ class Nide{
 
         this.coloredCursor = 0;
 
-        let cursorLineLevel = 0;
-
-        for(let i = 0;i<this.code.length;i++){
-            let c = this.code[i];
-
-            if(c == '\n'){
-                cursorLineLevel++;
-                
-                if(i>=this.cursor){
-                    break;
-                }
-
-            }
-
-        }
-
-        this.cursorLineLevel = cursorLineLevel;
+        this.RecalculateCursorLevel();
 
 
         if(!(option.printColoredCode == true)){
@@ -700,6 +845,7 @@ class Nide{
 
         let newCode = withLineIndicesCode(coloredCode,6);
 
+        newCode = this.AddFileExplorer(newCode);
 
         newCode = this.OptimizeCode(newCode);
 
@@ -813,6 +959,36 @@ class Nide{
             if(i!=eI){
                 newCode+=('\n');
             }
+
+        }
+
+        return newCode;
+    }
+
+    GetFileExplorerLine=function(lineLevel){
+        return '';
+    }
+    
+    AddFileExplorer(code){
+        let newCode = '';
+
+        let lineLevel = 0;
+
+        newCode+=this.GetFileExplorerLine(lineLevel);
+
+        for(let i = 0; i<code.length; i++){
+
+            let c = code[i];
+
+            if(code[i]=='\n'){
+                lineLevel++;
+
+                newCode += '\n'+this.GetFileExplorerLine(lineLevel);
+
+                continue;
+            }
+
+            newCode+=c;
 
         }
 
