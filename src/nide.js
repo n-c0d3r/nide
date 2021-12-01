@@ -520,6 +520,7 @@ class Nide{
 
     OpenFile(name){
         let fullPath = path.join(this.cwd,name);
+        this.fileName = name;
         if(fs.existsSync(fullPath)){
             
             this.code = this.ConvertToSimpleEOL(fs.readFileSync(fullPath).toString());
