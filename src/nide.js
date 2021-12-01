@@ -317,6 +317,10 @@ class Nide{
 
     ChangeMode(mode){
         this.mode = mode;
+    
+        if(mode == 'fexp'){
+            this.LoadFilesTree();
+        }
     }
 
     Start(){
