@@ -162,7 +162,13 @@ class Nide{
                     return;
                 }
                 if(key && key.meta && key.name == "j"){
-                    app.NewTab();
+                    app.NewTab({
+                        'cursor': 0,
+                        'code': '',
+                        'fileName': this.defaultFileName,
+                        'mode': this.mode,
+                        'cwd': this.cwd
+                    });
                     return;
                 }
                 if(key && key.meta && key.name == "n"){
@@ -407,6 +413,7 @@ class Nide{
     OpenFile_FULLPATH(fullPath){
         this.cwd = path.dirname(fullPath);
         this.fileName = path.basename(fullPath);
+        console.log(fullPath);
         if(fs.existsSync(fullPath)){
             
             this.code = fs.readFileSync(fullPath).toString();
@@ -438,10 +445,19 @@ class Nide{
             }
             else if(this.FEXP_itemsTypes[this.FEXP_lines[this.cursorLineLevel]] == 'file'){
 
+                let filePath = this.FEXP_lines[this.cursorLineLevel];
+
+                this.NewTab({
+                    'cursor': 0,
+                    'code': '',
+                    'fileName': path.basename(filePath),
+                    'mode': this.mode,
+                    'cwd': path.dirname(filePath)
+                });
 
                 this.ChangeMode('default');
 
-                this.OpenFile_FULLPATH(this.FEXP_lines[this.cursorLineLevel]);
+                this.OpenFile_FULLPATH(filePath);
 
                 this.ReprintCode();
 
@@ -536,15 +552,7 @@ class Nide{
         }
     }
 
-    NewTab(index){
-
-        let newTab = {
-            'cursor': 0,
-            'code': '',
-            'fileName': this.defaultFileName,
-            'mode': this.mode,
-            'cwd': this.cwd
-        };
+    NewTab(newTab){
 
         this.tabs.push(newTab);
 
