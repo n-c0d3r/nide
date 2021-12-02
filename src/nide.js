@@ -653,9 +653,9 @@ class Nide{
         
             console.clear();
         
-            process.stdout.write('\x1b[33mMODE: \x1b[32m'+this.mode+'\x1b[37m\n\n');
+            process.stdout.write(this.AddCoderHeader(''));
                 
-            process.stdout.write('\x1b[36mRun:\x1b[37m\n');
+            process.stdout.write('\n');
 
             child_process.exec('start cmd.exe /k py "'+cacheFilePath+'"',{cwd:this.cwd}, (err, stdout, stderr) => {
                 if (err) {
@@ -1196,10 +1196,10 @@ class Nide{
             let tab = this.tabs[i];
 
             if(this.currentTabIndex == i){
-                tabFileNames+='\x1b[32m\x1b[1m['+(tab.fileName)+']\x1b[0m';
+                tabFileNames+='\x1b[42m\x1b[30m '+(tab.fileName)+' \x1b[0m';
             }
             else{
-                tabFileNames+=`[${tab.fileName}]`;
+                tabFileNames+=` ${tab.fileName} `;
             }
 
             if(!(i == endI)){
@@ -1225,15 +1225,33 @@ class Nide{
            tabFileNames += '\x1b[30m\x1b[1m...\x1b[0m';
         }
 
-        return `>  ${tabFileNames}`;
+        return `        |${tabFileNames}|`;
     }
 
     AddCoderHeader(code){
         let newCode = code;
-        newCode = '>  \x1b[36mFILE NAME \x1b[0m :  \x1b[33m'+this.fileName+'\x1b[37m'+this.fileStatus+'\n\n' + newCode;
-        newCode = '>  \x1b[36mCWD       \x1b[0m :  \x1b[33m'+this.cwd+'\x1b[37m\n' + newCode;
-        newCode = '>  \x1b[36mMODE      \x1b[0m :  \x1b[33m'+this.mode+'\x1b[37m\n' + newCode;
+        // newCode = '>  \x1b[36mFILE NAME \x1b[0m :  \x1b[33m'+this.fileName+'\x1b[37m'+this.fileStatus+'\n\n' + newCode;
+        // newCode = '>  \x1b[36mCWD       \x1b[0m :  \x1b[33m'+this.cwd+'\x1b[37m\n' + newCode;
+        // newCode = '>  \x1b[36mMODE      \x1b[0m :  \x1b[33m'+this.mode+'\x1b[37m\n' + newCode;
+
+        let modeName = this.mode;
+
+        if(modeName.length>7){
+            modeName = modeName.substring(0,8);
+        }
+
+        newCode = '\n'+newCode;
+
+        let cwd = this.cwd;
+
+        if(cwd[cwd.length-1]=='\\'){
+            cwd=cwd.substring(0,cwd.length-1);
+        }
+
+        newCode = `${spaces(8)}| ${spaces(7-modeName.length)}${modeName} |\x1b[0m\x1b[46m\x1b[30m ${cwd} \x1b[42m\\\x1b[43m\x1b[30m ${this.fileName} \x1b[0m\n` + newCode;
+
         newCode = '\n' + this.TabsString() + '\n\n' + newCode;
+
         return newCode;
     }
 
