@@ -438,7 +438,7 @@ class Nide{
                         compiledLine = command(args);
                     }
                     catch(err){
-                        console.error(err);
+                        compiledCode += err;
                     }
                     finally{
                         compiledCode += compiledLine;
@@ -636,7 +636,7 @@ class Nide{
                 let lineLevel = 0;
 
                 console.log = (data)=>{
-                    process.stdout.write('\x1b[30m\x1b[1m' + spaces(6 - lineLevel) + lineLevel + ' |\x1b[0m'+data+'\n');
+                    process.stdout.write('\x1b[30m\x1b[1m' + spaces(6 - lineLevel.toString().length+1) + lineLevel + ' |\x1b[0m'+data+'\n');
                     lineLevel++;
                 }
         
