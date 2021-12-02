@@ -1024,16 +1024,16 @@ class Nide{
             if(item.type == 'folder'){
                 name = ''+name;
                 if((app.FEXP_openedItems[path.normalize(item.path)] == true)){
-                    name = '▾ '+name;
+                    name = ' ▾ '+name;
                     name += '';
                 }
                 else{
-                    name = '▸ '+name;
+                    name = ' ▸ '+name;
                     name += '';
                 }
             }
             else    
-                name = '  '+name;
+                name = '   '+name;
 
 
             return `${name}\n${childsStr}`;
