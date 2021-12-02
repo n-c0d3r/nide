@@ -9,3 +9,10 @@ newgroup
 cf "fileExplorer.nide"
 
 mode fexp
+
+newgroup
+cf "help.nide"
+
+mode default
+
+help
