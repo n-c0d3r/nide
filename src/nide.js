@@ -561,6 +561,8 @@ class Nide{
 
     RunCode(){
         this.AddToCodeHis(this.code);
+
+        let app = this;
         
         if(this.mode == 'fexp'){
             this.RecalculateCursorLevel();
@@ -632,13 +634,6 @@ class Nide{
                 console.clear();
         
                 process.stdout.write(this.AddCoderHeader(''));
-
-                let lineLevel = 0;
-
-                console.log = (data)=>{
-                    process.stdout.write('\x1b[30m\x1b[1m' + spaces(6 - lineLevel.toString().length+1) + lineLevel + ' |\x1b[0m'+data+'\n');
-                    lineLevel++;
-                }
         
                 return (func(this));
             }
@@ -658,13 +653,6 @@ class Nide{
         
             process.stdout.write(this.AddCoderHeader(''));
 
-            let lineLevel = 0;
-
-            console.log = (data)=>{
-                process.stdout.write('\x1b[30m\x1b[1m' + spaces(6 - lineLevel.toString().length+1) + lineLevel + ' |\x1b[0m'+data+'\n');
-                lineLevel++;
-            }
-
             child_process.exec('start cmd.exe /k py "'+cacheFilePath+'"',{cwd:this.cwd}, (err, stdout, stderr) => {
                 if (err) {
                     console.log(`${err}`);
@@ -677,15 +665,8 @@ class Nide{
         }
         else if(this.mode == 'default'){
             try{
-
-                let lineLevel = 0;
         
                 this.lastFileOpenedCode = this.code;
-
-                console.log = (data)=>{
-                    process.stdout.write('\x1b[30m\x1b[1m' + spaces(6 - lineLevel.toString().length+1) + lineLevel + ' |\x1b[0m'+data+'\n');
-                    lineLevel++;
-                }
 
                 console.clear();
                 process.stdout.write(this.AddCoderHeader(''));
@@ -699,6 +680,27 @@ class Nide{
             }
         }
 
+    }
+
+    LogWithLineIndex(data,lineLevel){
+        for(let obj of data){
+            this.LogObjectWithLineIndex(obj,lineLevel);
+        }
+    }
+
+    LogObjectWithLineIndex(obj,lineLevel){
+        process.stdout.write('\x1b[30m\x1b[1m' + spaces(6 - lineLevel.toString().length+1) + lineLevel + ' |\x1b[0m');
+
+        let GetObjStr = function(){
+
+            
+
+        }   
+
+        process.stdout.write(GetObjStr(obj));
+
+
+        process.stdout.write('\n');
     }
 
     OpenTab(index){
