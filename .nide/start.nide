@@ -8,10 +8,4 @@ nexttab
 newgroup
 cf "fileExplorer.nide"
 
-newtab
-cd "src"
-cf "nide.js"
-
-mode js
-
-reloadfile
+mode fexp
