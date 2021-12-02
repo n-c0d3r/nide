@@ -294,6 +294,18 @@ class Nide{
         this.ReloadConfig();
 
         this.LoadPlugins();
+
+        this.TryLoadStartFile();
+    }
+
+    TryLoadStartFile(){
+
+        let startFilePath = path.join(this.cwd,'.nide','start.nide');
+
+        if(fs.existsSync(startFilePath)){
+            this.code = this.ConvertToSimpleEOL(fs.readFileSync(startFilePath).toString());
+            this.RunCode('default');
+        }
     }
 
     GetTabsFiles(){
@@ -373,8 +385,8 @@ class Nide{
     }
 
     Start(){
-        
-        this.Clear();
+
+        this.ReprintCode();
 
     }
 
@@ -415,10 +427,15 @@ class Nide{
         process.exit();
     }
 
-    CompileCode(code){
+    CompileCode(code,mode){
+
+        if(mode==null){
+            mode = this.mode;
+        }
+
         let compiledCode = '';
 
-        if(this.mode == 'js'){
+        if(mode == 'js'){
             compiledCode = `
                 return ((nide)=>{  
 
@@ -427,10 +444,10 @@ class Nide{
                 });
             `;
         }
-        else if(this.mode == 'py'){
+        else if(mode == 'py'){
             compiledCode = `${code}`;
         }
-        else if(this.mode == 'default'){
+        else if(mode == 'default'){
 
             let lines = code.split('\n');
 
@@ -453,7 +470,7 @@ class Nide{
                     var command;
                     
                     try{
-                        command = require('./commands/'+args[0]);
+                        command = require(__dirname+'/commands/'+args[0]);
                         compiledLine = command(args);
                     }
                     catch(err){
@@ -554,10 +571,14 @@ class Nide{
 
             this.lastFileOpenedCode = this.code;
 
+            this.tabs[this.currentTabIndex].code = this.code;
+
+            this.tabGroups[this.tabGroupIndex].tabs = this.tabs;
         }
         else{
             this.code = name+' Not Found!!!';
         }
+
     }
 
     OpenFile_FULLPATH(fullPath){
@@ -620,12 +641,16 @@ class Nide{
         this.ReprintCode();
     }
 
-    RunCode(){
+    RunCode(mode){
         this.AddToCodeHis(this.code);
 
         let app = this;
+
+        if(mode==null){
+            mode = this.mode;
+        }
         
-        if(this.mode == 'fexp'){
+        if(mode == 'fexp'){
             this.RecalculateCursorLevel();
 
             if(this.FEXP_itemsTypes[this.FEXP_lines[this.cursorLineLevel]] == 'folder'){
@@ -684,9 +709,9 @@ class Nide{
         }
 
         
-        let compiledCode = this.CompileCode(this.code);
+        let compiledCode = this.CompileCode(this.code,mode);
 
-        if(this.mode == 'js'){
+        if(mode == 'js'){
             try{
                 let func = Function(compiledCode)();
                 
@@ -702,7 +727,7 @@ class Nide{
                 console.error(err);
             }
         }
-        else if(this.mode == 'py'){
+        else if(mode == 'py'){
 
             let cacheFilePath = this.cwd + '/' + this.fileName;//'/nide_code.py';
 
@@ -724,7 +749,7 @@ class Nide{
             });
 
         }
-        else if(this.mode == 'default'){
+        else if(mode == 'default'){
             try{
         
                 this.lastFileOpenedCode = this.code;
@@ -733,12 +758,15 @@ class Nide{
                 process.stdout.write(this.AddCoderHeader(''));
 
                 let func = Function(compiledCode)();
-        
-                return (func(this));
+
+                let r = (func(this));
+
+                return r;
             }
             catch(err){
                 console.error(err);
             }
+
         }
 
     }

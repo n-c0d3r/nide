@@ -1,0 +1,17 @@
+cf "controller.nide"
+
+newtab
+cf "terminal.nide"
+
+nexttab
+
+newgroup
+cf "fileExplorer.nide"
+
+newtab
+cd "src"
+cf "nide.js"
+
+mode js
+
+reloadfile
