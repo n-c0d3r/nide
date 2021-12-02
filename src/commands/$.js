@@ -7,8 +7,6 @@ module.exports = (args)=>{
         }
     }
     return `
-        nide.code='';
-        nide.ReprintCode();
         nide.ExecCMDCommand('${command}');
     `;
 }

@@ -462,7 +462,6 @@ class Nide{
     }
 
     ExecCMDCommand(command){
-        console.log(`\n`);
         child_process.exec(
             command, 
             {
@@ -634,8 +633,13 @@ class Nide{
                 console.clear();
         
                 process.stdout.write(this.AddCoderHeader(''));
-                
-                process.stdout.write('\n');
+
+                let lineLevel = 0;
+
+                console.log = (data)=>{
+                    process.stdout.write('\x1b[30m\x1b[1m' + spaces(6 - lineLevel) + lineLevel + ' |\x1b[0m'+data+'\n');
+                    lineLevel++;
+                }
         
                 return (func(this));
             }
@@ -654,8 +658,13 @@ class Nide{
             console.clear();
         
             process.stdout.write(this.AddCoderHeader(''));
-                
-            process.stdout.write('\n');
+
+            let lineLevel = 0;
+
+            console.log = (data)=>{
+                process.stdout.write('\x1b[30m\x1b[1m' + spaces(6 - lineLevel.toString().length+1) + lineLevel + ' |\x1b[0m'+data+'\n');
+                lineLevel++;
+            }
 
             child_process.exec('start cmd.exe /k py "'+cacheFilePath+'"',{cwd:this.cwd}, (err, stdout, stderr) => {
                 if (err) {
@@ -669,9 +678,20 @@ class Nide{
         }
         else if(this.mode == 'default'){
             try{
+
+                let lineLevel = 0;
+        
+                this.lastFileOpenedCode = this.code;
+
+                console.log = (data)=>{
+                    process.stdout.write('\x1b[30m\x1b[1m' + spaces(6 - lineLevel.toString().length+1) + lineLevel + ' |\x1b[0m'+data+'\n');
+                    lineLevel++;
+                }
+
+                console.clear();
+                process.stdout.write(this.AddCoderHeader(''));
+
                 let func = Function(compiledCode)();
-                
-                console.log('');
         
                 return (func(this));
             }
