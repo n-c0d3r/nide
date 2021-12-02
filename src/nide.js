@@ -148,7 +148,14 @@ class Nide{
         if(this.mode == 'fexp')
             this.LoadFilesTree();
 
+        this.keypressEventListeners=[];
+
         this.console.keypressEventListeners['Nide'] = function(ch,key){
+
+            for(let keypressEventListener of app.keypressEventListeners){
+                keypressEventListener(ch,key);
+            }
+
             if(key != null){
                 if(key && key.meta && key.name == "l"){
                     app.RunCode();
@@ -168,7 +175,7 @@ class Nide{
                     app.ReprintCode();
                     return;
                 }
-                if(key && key.meta && key.name == "q"){
+                if(key && key.ctrl && key.name == "s"){
                     app.SaveFile();
                     return;
                 }
@@ -298,6 +305,10 @@ class Nide{
         this.TryLoadStartFile();
     }
 
+    AddKeypressEventListener(callback){
+        this.keypressEventListeners.push(callback);
+    }
+
     TryLoadStartFile(){
 
         let startFilePath = path.join(this.cwd,'.nide','start.nide');
@@ -317,10 +328,19 @@ class Nide{
     }
 
     LoadPlugins(){
-        let plugins = require('./plugins/plugins.json');
+        let globalPlugins = require('./plugins/plugins.json');
 
-        for(let plugin of plugins){
+        for(let plugin of globalPlugins){
             (require('./plugins/'+plugin))(this);
+        }
+
+        let localPluginPath = path.join(this.cwd,'.nide','plugins','plugins.json');
+        if(fs.existsSync(localPluginPath)){
+            let localPlugins = require(localPluginPath);
+    
+            for(let plugin of localPlugins){
+                (require(path.join(this.cwd,'.nide','plugins',plugin)))(this);
+            }
         }
 
     }
