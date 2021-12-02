@@ -86,8 +86,6 @@ class Nide{
 
         this.cursorLineLevel = 0;
 
-        this.maxHeight = this.GetMaxHeight();
-
         this.modes = [
             'default',
             'js',
@@ -96,6 +94,8 @@ class Nide{
         ];
 
         this.mode = option.mode;
+
+        this.code = '';
 
         this.cwd = option.cwd;
 
@@ -131,6 +131,17 @@ class Nide{
             'mode': this.mode,
             'cwd': this.cwd
         };
+
+        this.tabGroups = [];
+
+        this.tabGroups[0] = {
+            'tabs':app.tabs,
+            'currentTabIndex':0
+        };
+
+        this.tabGroupIndex = 0;
+
+        this.maxHeight = this.GetMaxHeight();
 
         this.console = new Console();
 
@@ -204,6 +215,11 @@ class Nide{
                     return;
                 }
 
+                if(key && key.meta && key.name == "s"){
+                    app.OpenTabGroup(app.tabGroupIndex+1);
+                    return;
+                }
+
                 if(key && key.ctrl && key.name == "y"){
                     app.Redo();
                     return;
@@ -274,8 +290,6 @@ class Nide{
             }
 
         }
-
-        this.code = '';
 
         this.ReloadConfig();
 
@@ -564,6 +578,48 @@ class Nide{
         }
     }
 
+    NewTabGroup(){
+        let app = this;
+        this.tabGroups.push({
+            'tabs':[{
+                'cursor': 0,
+                'code': '',
+                'fileName': app.defaultFileName,
+                'mode': app.mode,
+                'cwd': app.cwd
+            }],
+            'currentTabIndex':0
+        });
+        this.OpenTabGroup(this.tabGroups.length-1);
+    }
+
+    DeleteTabGroup(index){
+        if(this.tabGroups.length>1){
+            if(index==null){
+                index=this.tabGroupIndex;
+            }
+            this.tabGroups.splice(index,1);
+            this.tabGroupIndex = clamp(this.tabGroupIndex,0,this.tabGroups.length-1);
+            this.OpenTabGroup(this.tabGroupIndex);
+        }
+        this.ReprintCode();
+    }
+
+    OpenTabGroup(index){
+        if(index==this.tabGroups.length){
+            index=0;
+        }
+
+        this.tabGroupIndex = index;
+
+        this.tabs = this.tabGroups[this.tabGroupIndex].tabs;
+        this.currentTabIndex = this.tabGroups[this.tabGroupIndex].currentTabIndex;
+
+        this.OpenTab(this.tabGroups[this.tabGroupIndex].currentTabIndex);
+
+        this.ReprintCode();
+    }
+
     RunCode(){
         this.AddToCodeHis(this.code);
 
@@ -722,6 +778,9 @@ class Nide{
         this.fileName = this.tabs[this.currentTabIndex].fileName;
         this.cursor = this.tabs[this.currentTabIndex].cursor;
 
+        this.tabGroups[this.tabGroupIndex].tabs = this.tabs;
+        this.tabGroups[this.tabGroupIndex].currentTabIndex = this.currentTabIndex;
+
         this.ReprintCode();
     }
 
@@ -731,6 +790,9 @@ class Nide{
             this.currentTabIndex = clamp(this.currentTabIndex,0,this.tabs.length-1);
             this.OpenTab(this.currentTabIndex);
         }
+
+        this.tabGroups[this.tabGroupIndex].tabs = this.tabs;
+        this.tabGroups[this.tabGroupIndex].currentTabIndex = this.currentTabIndex;
     }
 
     NewTab(newTab){
@@ -739,6 +801,8 @@ class Nide{
 
         this.OpenTab(this.tabs.length-1);
 
+        this.tabGroups[this.tabGroupIndex].tabs = this.tabs;
+        this.tabGroups[this.tabGroupIndex].currentTabIndex = this.currentTabIndex;
     }
 
     Left(){
@@ -1102,7 +1166,7 @@ class Nide{
     }
 
     GetHeaderLineCount(){
-        return 5;
+        return this.tabGroups.length+4;
     }
 
     GetMaxHeight(){
@@ -1196,34 +1260,43 @@ class Nide{
         this.console.HideCursor();
     }
 
-    TabsString(){
+    TabsString(groupIndex){
 
         let tabFileNames = '';
 
-        let startI = this.currentTabIndex;
+        let startI = this.tabGroups[groupIndex].currentTabIndex;
 
-        let endI = this.tabs.length-1;
+        let endI = this.tabGroups[groupIndex].tabs.length-1;
 
-        if(this.tabs.length - this.currentTabIndex < this.maxTabsShowed){
-            startI = clamp(this.tabs.length-this.maxTabsShowed,0,this.tabs.length-1);
+        if(this.tabGroups[groupIndex].tabs.length - this.tabGroups[groupIndex].currentTabIndex < this.maxTabsShowed){
+            startI = clamp(this.tabGroups[groupIndex].tabs.length-this.maxTabsShowed,0,this.tabGroups[groupIndex].tabs.length-1);
         }
 
         if(endI - startI + 1 > this.maxTabsShowed){
-            endI = clamp(startI+this.maxTabsShowed-1,0,this.tabs.length-1);
+            endI = clamp(startI+this.maxTabsShowed-1,0,this.tabGroups[groupIndex].tabs.length-1);
         }
 
         for(let i=startI;(i<=endI);i++){
-            let tab = this.tabs[i];
+            let tab = this.tabGroups[groupIndex].tabs[i];
 
-            if(this.currentTabIndex == i){
-                tabFileNames+='\x1b[42m\x1b[30m '+(tab.fileName)+' \x1b[0m';
+            if(this.tabGroups[groupIndex].currentTabIndex == i){
+                if(this.tabGroupIndex != groupIndex)
+                    tabFileNames+='\x1b[0m\x1b[37m '+(tab.fileName)+' \x1b[0m';
+                else
+                    tabFileNames+='\x1b[42m\x1b[30m '+(tab.fileName)+' \x1b[0m';
             }
             else{
-                tabFileNames+=` ${tab.fileName} `;
+                if(this.tabGroupIndex != groupIndex)
+                    tabFileNames+=`\x1b[30m\x1b[1m ${tab.fileName} `;
+                else
+                    tabFileNames+=`\x1b[47m\x1b[30m ${tab.fileName} `;
             }
 
             if(!(i == endI)){
-                tabFileNames+=' ';
+                if(this.tabGroupIndex != groupIndex)
+                    tabFileNames+='\x1b[30m\x1b[1m|\x1b[0m';
+                else
+                    tabFileNames+='\x1b[0m|\x1b[0m';
             }
 
         }
@@ -1231,21 +1304,37 @@ class Nide{
 
         tabFileNames = `${tabFileNames}`;
 
-        if(startI==0){
+        if(startI==0 || this.tabGroups[groupIndex].tabs.length<=this.maxTabsShowed){
            tabFileNames = '\x1b[0m'+tabFileNames;
         }
         else{
            tabFileNames = '\x1b[30m\x1b[1m...\x1b[0m'+tabFileNames;
         }
 
-        if(endI==this.tabs.length-1){
+        if(endI==this.tabGroups[groupIndex].tabs.length-1 || this.tabGroups[groupIndex].tabs.length<=this.maxTabsShowed){
            tabFileNames += '\x1b[0m';
         }
         else{
            tabFileNames += '\x1b[30m\x1b[1m...\x1b[0m';
         }
 
-        return `        |${tabFileNames}|`;
+        if(groupIndex != groupIndex)
+            return `        \x1b[0m\x1b[30m\x1b[1m|${tabFileNames}\x1b[0m\x1b[30m\x1b[1m|`;
+        else
+            return `        \x1b[0m|${tabFileNames}\x1b[0m|`;
+    }
+
+    TabGroupsString(){
+        let result = '';
+
+        for(let i=0;i<this.tabGroups.length;i++){
+            result+=this.TabsString(i);
+            if(i!=this.tabGroups.length-1){
+                result+='\n';
+            }
+        }
+
+        return result;
     }
 
     AddCoderHeader(code){
@@ -1270,7 +1359,7 @@ class Nide{
 
         newCode = `${spaces(8)}| ${spaces(7-modeName.length)}${modeName} |\x1b[0m\x1b[46m\x1b[30m ${cwd} \x1b[42m\\\x1b[43m\x1b[30m ${this.fileName}${this.fileStatus} \x1b[0m\n` + newCode;
 
-        newCode = '\n' + this.TabsString() + '\n\n' + newCode;
+        newCode = '\n' + this.TabGroupsString() + '\n\n' + newCode;
 
         return newCode;
     }
