@@ -86,7 +86,7 @@ class Nide{
 
         this.cursorLineLevel = 0;
 
-        this.maxHeight = option.maxHeight;
+        this.maxHeight = this.GetMaxHeight();
 
         this.modes = [
             'default',
@@ -301,7 +301,6 @@ class Nide{
             let config = JSON.parse(fs.readFileSync(configPath).toString());
 
             this.defaultFileName = config.defaultFileName;
-            this.maxHeight = config.maxHeight;
             this.maxTabsShowed = config.maxTabsShowed;
 
         }
@@ -1112,8 +1111,19 @@ class Nide{
         return r;
     }
 
+    GetHeaderLineCount(){
+        return 5;
+    }
+
+    GetMaxHeight(){
+        return process.stdout.rows - this.GetHeaderLineCount() - 1;
+    }
+
     ReprintCode(option){
         console.clear();
+
+        this.maxHeight = this.GetMaxHeight();
+
         this.console.HideCursor();
 
         if(this.mode == 'fexp'){
