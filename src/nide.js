@@ -199,6 +199,11 @@ class Nide{
                     return;
                 }
 
+                if(key && key.meta && key.name == "x"){
+                    app.DeleteCurrentLine();
+                    return;
+                }
+
                 if(key && key.ctrl && key.name == "y"){
                     app.Redo();
                     return;
@@ -792,33 +797,8 @@ class Nide{
 
         let newCursor = this.cursor-1;
 
-        // if(this.mode=='fexp'){
-        //     let t = false;
-        //     while(this.code[newCursor] == '>' || this.code[newCursor] == '<' || t){
-        //         if(this.code[newCursor] == '>'){
-        //             t = true;
-        //         }
-        //         if(t && this.code[newCursor]=='<'){
-        //             t = false;
-        //         }
-        //         newCursor--;
-        //     }
-        // }
-
         for(let i = newCursor; i>=0; i--){
-            // if(this.mode=='fexp'){
-            //     let t2 = false;
-            //     while(this.code[i] == '>' || this.code[i] == '<' || t2){
-            //         if(this.code[i] == '>'){
-            //             t2 = true;
-            //         }
-            //         if(t2 && this.code[i]=='<'){
-            //             t2 = false;
-            //         }
-            //         i--;
-            //     }
-            // }
-            if(this.code[i]=='\n'){
+            if(this.code[i]=='\n' || i==0){
                 newCursor=i;
                 break;
             }
@@ -833,33 +813,8 @@ class Nide{
 
         let newCursor = this.cursor+1;
 
-        // if(this.mode=='fexp'){
-        //     let t = false;
-        //     while(this.code[newCursor] == '<' || this.code[newCursor] == '>' || t){
-        //         if(this.code[newCursor] == '<'){
-        //             t = true;
-        //         }
-        //         if(t && this.code[newCursor]=='>'){
-        //             t = false;
-        //         }
-        //         newCursor++;
-        //     }
-        // }
-
         for(let i = newCursor; i<this.code.length; i++){
-            // if(this.mode=='fexp'){
-            //     let t2 = false;
-            //     while(this.code[i] == '<' || this.code[i] == '>' || t2){
-            //         if(this.code[i] == '<'){
-            //             t2 = true;
-            //         }
-            //         if(t2 && this.code[i]=='>'){
-            //             t2= false;
-            //         }
-            //         i++;
-            //     }
-            // }
-            if(this.code[i]=='\n'){
+            if(this.code[i]=='\n' || i==this.code.length-1){
                 newCursor=i;
                 break;
             }
@@ -868,6 +823,39 @@ class Nide{
         this.cursor=clamp(newCursor,0,this.code.length);
 
         this.ReprintCode();
+    }
+
+    DeleteCurrentLine(){
+
+        let newCursor = this.cursor-1;
+
+        for(let i = newCursor; i>=0; i--){
+            if(this.code[i]=='\n' || i==0){
+                newCursor=i;
+                break;
+            }
+        }
+
+        let newCursor2 = this.cursor;
+
+        for(let i = newCursor2; i<this.code.length; i++){
+            if(this.code[i]=='\n' || i==this.code.length-1){
+                newCursor2=i;
+                break;
+            }
+        }
+
+        newCursor  = clamp(newCursor,0,this.code.length);
+        newCursor2 = clamp(newCursor2,0,this.code.length);
+
+        this.AddToCodeHis(this.code);
+
+        this.code = this.code.substring(0,newCursor+1) + this.code.substring(newCursor2+1,this.code.length);
+
+        this.cursor=newCursor+1;
+
+        this.ReprintCode();
+
     }
 
     AddCode(key){
@@ -1280,7 +1268,7 @@ class Nide{
             cwd=cwd.substring(0,cwd.length-1);
         }
 
-        newCode = `${spaces(8)}| ${spaces(7-modeName.length)}${modeName} |\x1b[0m\x1b[46m\x1b[30m ${cwd} \x1b[42m\\\x1b[43m\x1b[30m ${this.fileName} \x1b[0m\n` + newCode;
+        newCode = `${spaces(8)}| ${spaces(7-modeName.length)}${modeName} |\x1b[0m\x1b[46m\x1b[30m ${cwd} \x1b[42m\\\x1b[43m\x1b[30m ${this.fileName}${this.fileStatus} \x1b[0m\n` + newCode;
 
         newCode = '\n' + this.TabsString() + '\n\n' + newCode;
 
