@@ -638,6 +638,11 @@ class Nide{
             this.LoadFilesTree();
     }
 
+    Log(...args){
+        process.stdout.write(spaces(8)+'\x1b[0m\x1b[30m\x1b[1m|\x1b[0m');
+        console.log(...args);
+    }
+
     OpenFile(name){
         let fullPath = path.join(this.cwd,name);
         this.fileName = name;
@@ -1024,32 +1029,60 @@ class Nide{
         let cursor_offset = 0;
 
         if(this.mode=='js' || this.mode=='py' || this.mode == 'default'){
-            if(key=='['){
+            if(key=='[' && this.code[this.cursor]!=']'){
                 key+=']';
                 cursor_offset = -1;
             }
-            if(key=='"'){
+            if(key=='"' && this.code[this.cursor]!='"'){
                 key+='"';
                 cursor_offset = -1;
             }
 
             if(this.mode=='js')
-                if(key=='`'){
+                if(key=='`' && this.code[this.cursor]!='`'){
                     key+='`';
                     cursor_offset = -1;
                 }
 
-            if(key=="'"){
+            if(key=="'" && this.code[this.cursor]!="'"){
                 key+="'";
                 cursor_offset = -1;
             }
-            if(key=='{'){
+            if(key=='{' && this.code[this.cursor]!='}'){
                 key+='}';
                 cursor_offset = -1;
             }
-            if(key=='('){
+            if(key=='(' && this.code[this.cursor]!=')'){
                 key+=')';
                 cursor_offset = -1;
+            }
+
+            if(key==')' && this.code[this.cursor]==')'){
+                key='';
+                cursor_offset = 1;
+            }
+            if(key==']' && this.code[this.cursor]==']'){
+                key='';
+                cursor_offset = 1;
+            }
+            if(key=='}' && this.code[this.cursor]=='}'){
+                key='';
+                cursor_offset = 1;
+            }
+            
+            if(key=='"' && this.code[this.cursor]=='"'){
+                key='';
+                cursor_offset = 1;
+            }
+            
+            if(key=="'" && this.code[this.cursor]=="'"){
+                key='';
+                cursor_offset = 1;
+            }
+            
+            if(key=='`' && this.code[this.cursor]=='`'){
+                key='';
+                cursor_offset = 1;
             }
         }
 
