@@ -338,6 +338,7 @@ class Nide{
 
             if(teCommandCursorChr == null){
                 teCommandCursorChr=' ';
+                teCommandCodeLength++;
             }
             
             teCommandCode = teCommandCode.substring(0,this.teCommandCursor)+'\x1b[40m\x1b[37m'+teCommandCursorChr+'\x1b[0m\x1b[30m\x1b[47m'+teCommandCode.substring(this.teCommandCursor+1,this.teCommandCode.length);
