@@ -9,6 +9,7 @@ let plugin =  new (class {
         this.foundedCursor = [];
         this.isFinding = false;
         this.foundedCursorIndex = 0;
+        this.lastFindCommand = '';
     }
 
     Backspace(){
@@ -123,7 +124,9 @@ let plugin =  new (class {
     }
 
     Find(keyword){
+
         if(!this.isFinding){
+
             this.foundedCursor = [];
 
             

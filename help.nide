@@ -1,0 +1,43 @@
+MODES:
+     js
+     py
+     fexp
+
+KEYS:
+     Alt + L: Run Code, Open Item (FEXP Mode), Run Or Close Command In Text Editor Command Bar
+     Ctrl + L: Enable Or Disable Text Editor Command Bar
+     Alt + P: Clear Code Or Reload Items In FEXP Mode
+     Alt + K: Exit Nide Tool
+     Alt + O: Set Mode To Default
+     Alt + M: Get Last Code Saved Or Before Running Code
+     Ctrl + S: Save Code
+     Alt + I: Go To Next Tab
+     Alt + J: Open New Tab
+     Alt + N: Remove Current Tab
+     Alt + D: Reload File
+     Alt + G: Change Mode (Except FEXP Mode)
+     Alt + X: Delete Current Line
+     Alt + S: Change Tab Group
+
+COMMANDS:
+     help: Help
+     mode {modeName}: Set Mode
+     cls: Clear Code
+     exit: Exit Nide Tool
+     cd "{path}": Change Directory
+     cp "{partition}": Change Partition
+     cf "{file name}": Change File Name
+     jsopen "{filePath}": Open JS File In JS Mode
+     pyopen "{filePath}": Open PY File In PY Mode
+     open: Open File In Current Mode
+     $ {command}: Run Default Windows Terminal Commands
+     $$ {command}: Run Default Windows Terminal Commands In Another Window
+     newgroup: Create New Tab Group
+     deletegroup {index}: Delete Group By Index
+     deletegroup: Delete Current Group
+     newtab: Create New Tab
+     nexttab: Go To Next Tab
+     reloadfile: Reload Current File
+     te {command}:Run Text Editor Command Bar Command
+     te find {keyword}: Find Keyword
+     te replace {word1} {word2}: Relace Word

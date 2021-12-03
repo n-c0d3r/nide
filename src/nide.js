@@ -326,7 +326,7 @@ class Nide{
         let barNameLength = 14;
 
         for(let i=0;i<process.stdout.rows-this.textEditorLineCount-this.GetHeaderLineCount()-this.GetTextEditorCommandLineCount();i++){
-            code+='\n';
+            //code+='\n';
         }
 
         let teCommandCode = this.teCommandCode;
@@ -1022,7 +1022,7 @@ class Nide{
 
         let cursor_offset = 0;
 
-        if(this.mode=='js' || this.mode=='py'){
+        if(this.mode=='js' || this.mode=='py' || this.mode == 'default'){
             if(key=='['){
                 key+=']';
                 cursor_offset = -1;
@@ -1541,6 +1541,13 @@ class Nide{
                 newCode+=('\n');
             }
 
+        }
+
+        for(let i=0;i<process.stdout.rows-this.textEditorLineCount-this.GetHeaderLineCount()-this.GetTextEditorCommandLineCount();i++){
+            if(i!=(process.stdout.rows-this.textEditorLineCount-this.GetHeaderLineCount()-this.GetTextEditorCommandLineCount()-1))
+                newCode+='\n'+spaces(6)+'\x1b[0m\x1b[30m\x1b[1m~ |';
+            else
+                newCode+='\n';
         }
 
         return newCode;
