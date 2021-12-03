@@ -1019,8 +1019,41 @@ class Nide{
     }
 
     AddCode(key){
+
+        let cursor_offset = 0;
+
+        if(this.mode=='js' || this.mode=='py'){
+            if(key=='['){
+                key+=']';
+                cursor_offset = -1;
+            }
+            if(key=='"'){
+                key+='"';
+                cursor_offset = -1;
+            }
+
+            if(this.mode=='js')
+                if(key=='`'){
+                    key+='`';
+                    cursor_offset = -1;
+                }
+
+            if(key=="'"){
+                key+="'";
+                cursor_offset = -1;
+            }
+            if(key=='{'){
+                key+='}';
+                cursor_offset = -1;
+            }
+            if(key=='('){
+                key+=')';
+                cursor_offset = -1;
+            }
+        }
+
         this.code = this.code.substring(0,this.cursor) + key + this.code.substring(this.cursor,this.code.length);
-        this.cursor = clamp(this.cursor+key.length,0,this.code.length);
+        this.cursor = clamp(this.cursor+key.length+cursor_offset,0,this.code.length);
 
         this.AddToCodeHis(this.code);
 
