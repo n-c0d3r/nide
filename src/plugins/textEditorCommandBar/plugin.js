@@ -189,7 +189,7 @@ module.exports = (nide)=>{
     nide.AddKeypressEventListener((ch,key)=>{
         if(key!=null){
 
-            if(key && key.ctrl && key.name == 'l'){
+            if(key && key.ctrl && key.name == 'o'){
                 
                 enableTeCommandBar = !enableTeCommandBar;
 
@@ -246,6 +246,16 @@ module.exports = (nide)=>{
                         return;
                     }
         
+                    if(key && key.meta && key.name == "j"){
+                        plugin.Left();
+                        return;
+                    }
+        
+                    if(key && key.meta && key.name == "l"){
+                        plugin.Right();
+                        return;
+                    }
+        
                     if(key && key.name == "space"){
                         plugin.AddCode(' ');
                         return;
@@ -269,8 +279,22 @@ module.exports = (nide)=>{
                         }
                         return;
                     }
+
+                    if(key && key.meta && key.name == "i"){
+                        if(plugin.isFinding){
+                            plugin.FindUp();
+                        }
+                        return;
+                    }
     
-                    if(key && key.meta && key.name == "l"){
+                    if(key && key.meta && key.name == "k"){
+                        if(plugin.isFinding){
+                            plugin.FindDown();
+                        }
+                        return;
+                    }
+    
+                    if(key && key.meta && key.name == "o"){
                         plugin.RunCode();
                         return;
                     }

@@ -162,8 +162,14 @@ class Nide{
             }
 
             if(key != null){
+
+                if(key.name == 'escape'){
+                    app.Exit();
+                    return;
+                }
+                
                 if(app.enableTextEditor){
-                    if(key && key.meta && key.name == "l"){
+                    if(key && key.meta && key.name == "o"){
                         app.RunCode();
                         return;
                     }
@@ -195,7 +201,17 @@ class Nide{
                         return;
                     }
 
+                    if(key && key.meta && key.name == "j"){
+                        app.Left();
+                        return;
+                    }
+
                     if(key && key.name == "right"){
+                        app.Right();
+                        return;
+                    }
+
+                    if(key && key.meta && key.name == "l"){
                         app.Right();
                         return;
                     }
@@ -205,7 +221,18 @@ class Nide{
                         return;
                     }
 
+                    if(key && key.meta && key.name == "i"){
+                        app.Up();
+                        return;
+                    }
+
+
                     if(key && key.name == "down"){
+                        app.Down();
+                        return;
+                    }
+
+                    if(key && key.meta && key.name == "k"){
                         app.Down();
                         return;
                     }
@@ -230,11 +257,11 @@ class Nide{
                     }
                 }
                 if(key && key.meta && key.name == "k"){
-                    app.Exit();
+                    //app.Exit();
                     return;
                 }
 
-                if(key && key.meta && key.name == "o"){
+                if(key && key.meta && key.name == "q"){
                     app.ChangeMode('default');
                     app.code='';
                     app.ReprintCode();
@@ -249,7 +276,7 @@ class Nide{
                     app.ReprintCode();
                     return;
                 }
-                if(key && key.meta && key.name == "i"){
+                if(key && key.meta && key.name == "a"){
                     app.OpenTab(app.currentTabIndex+1);
                     return;
                 }
@@ -257,12 +284,12 @@ class Nide{
                     app.NextMode();
                     return;
                 }
-                if(key && key.meta && key.name == "d"){
+                if(key && key.meta && key.name == "w"){
                     app.OpenFile(app.fileName);
                     app.ReprintCode();
                     return;
                 }
-                if(key && key.meta && key.name == "j"){
+                if(key && key.meta && key.name == "d"){
                     app.NewTab({
                         'cursor': 0,
                         'code': '',
