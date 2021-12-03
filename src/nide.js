@@ -150,25 +150,90 @@ class Nide{
 
         this.keypressEventListeners=[];
 
+        this.teCommandCode = '';
+        this.teCommandCursor = 0;
+
         this.console.keypressEventListeners['Nide'] = function(ch,key){
+
+            app.enableTextEditor = true;
 
             for(let keypressEventListener of app.keypressEventListeners){
                 keypressEventListener(ch,key);
             }
 
             if(key != null){
-                if(key && key.meta && key.name == "l"){
-                    app.RunCode();
-                    return;
+                if(app.enableTextEditor){
+                    if(key && key.meta && key.name == "l"){
+                        app.RunCode();
+                        return;
+                    }
+                    if(key && key.ctrl && key.name == "z"){
+                        app.Undo();
+                        return;
+                    }
+
+                    if(key && key.meta && key.name == "x"){
+                        app.DeleteCurrentLine();
+                        return;
+                    }
+                    if(key && key.ctrl && key.name == "y"){
+                        app.Redo();
+                        return;
+                    }
+
+                    if(key && key.name == "backspace"){
+                        app.Backspace();
+                        return;
+                    }
+                    if(key && key.name == "delete"){
+                        app.Delete();
+                        return;
+                    }
+
+                    if(key && key.name == "left"){
+                        app.Left();
+                        return;
+                    }
+
+                    if(key && key.name == "right"){
+                        app.Right();
+                        return;
+                    }
+
+                    if(key && key.name == "up"){
+                        app.Up();
+                        return;
+                    }
+
+                    if(key && key.name == "down"){
+                        app.Down();
+                        return;
+                    }
+
+                    if(key && key.name == "tab"){
+                        app.AddCode('    ');
+                        return;
+                    }
+
+                    if(key && key.name == "space"){
+                        app.AddCode(' ');
+                        return;
+                    }
+
+                    if(key && key.name == "return"){
+                        app.AddCode('\n');
+                        return;
+                    }
+                    if(key && key.meta && key.name == "p"){
+                        app.Clear();
+                        return;
+                    }
                 }
                 if(key && key.meta && key.name == "k"){
                     app.Exit();
                     return;
                 }
-                if(key && key.meta && key.name == "p"){
-                    app.Clear();
-                    return;
-                }
+
                 if(key && key.meta && key.name == "o"){
                     app.ChangeMode('default');
                     app.code='';
@@ -212,76 +277,19 @@ class Nide{
                     return;
                 }
 
-                if(key && key.ctrl && key.name == "z"){
-                    app.Undo();
-                    return;
-                }
-
-                if(key && key.meta && key.name == "x"){
-                    app.DeleteCurrentLine();
-                    return;
-                }
 
                 if(key && key.meta && key.name == "s"){
                     app.OpenTabGroup(app.tabGroupIndex+1);
                     return;
                 }
 
-                if(key && key.ctrl && key.name == "y"){
-                    app.Redo();
-                    return;
-                }
 
                 if(key && key.meta && key.name == "f"){
                     app.ReloadConfig();
                     return;
                 }
 
-                if(key && key.name == "backspace"){
-                    app.Backspace();
-                    return;
-                }
-                if(key && key.name == "delete"){
-                    app.Delete();
-                    return;
-                }
-
-                if(key && key.name == "left"){
-                    app.Left();
-                    return;
-                }
-
-                if(key && key.name == "right"){
-                    app.Right();
-                    return;
-                }
-
-                if(key && key.name == "up"){
-                    app.Up();
-                    return;
-                }
-
-                if(key && key.name == "down"){
-                    app.Down();
-                    return;
-                }
-
-                if(key && key.name == "tab"){
-                    app.AddCode('    ');
-                    return;
-                }
-
-                if(key && key.name == "space"){
-                    app.AddCode(' ');
-                    return;
-                }
-
-                if(key && key.name == "return"){
-                    app.AddCode('\n');
-                    return;
-                }
-
-                if(!key.ctrl && !key.meta && app.mode!='fexp'){
+                if(!key.ctrl && !key.meta && app.mode!='fexp' && app.enableTextEditor){
                     if(key.shift){
                         app.AddCode(key.name.toUpperCase());
                     }
@@ -291,7 +299,7 @@ class Nide{
                 }
             }
             else{
-                if(app.mode!='fexp'){
+                if(app.mode!='fexp' && app.enableTextEditor){
                     app.AddCode(ch);
                 }
             }
@@ -303,6 +311,47 @@ class Nide{
         this.LoadPlugins();
 
         this.TryLoadStartFile();
+    }
+
+    Search(data){
+
+    }
+
+    AddTextEditorCommandBar(code){
+        let result = '';
+
+
+        let barName = '\x1b[44m Command \x1b[47m\x1b[46m te \x1b[42m \x1b[47m';
+
+        let barNameLength = 14;
+
+        for(let i=0;i<process.stdout.rows-this.textEditorLineCount-this.GetHeaderLineCount()-this.GetTextEditorCommandLineCount();i++){
+            code+='\n';
+        }
+
+        let teCommandCode = this.teCommandCode;
+
+        let teCommandCodeLength = teCommandCode.length;
+
+        if(this.enableTeCommandBar){
+            let teCommandCursorChr = teCommandCode[this.teCommandCursor];
+
+            if(teCommandCursorChr == null){
+                teCommandCursorChr=' ';
+            }
+            
+            teCommandCode = teCommandCode.substring(0,this.teCommandCursor)+'\x1b[40m\x1b[37m'+teCommandCursorChr+'\x1b[0m\x1b[30m\x1b[47m'+teCommandCode.substring(this.teCommandCursor+1,this.teCommandCode.length);
+    
+        }
+        else{
+            teCommandCode = '';
+            teCommandCodeLength = 0;
+        }
+        
+        code+='\n'+spaces(8)+'|\x1b[47m\x1b[30m'+barName+teCommandCode+spaces(-teCommandCodeLength+process.stdout.columns-9-barNameLength-1-8)+'\x1b[0m|\n';
+
+        // return result;
+        return code;
     }
 
     AddKeypressEventListener(callback){
@@ -337,7 +386,7 @@ class Nide{
         let localPluginPath = path.join(this.cwd,'.nide','plugins','plugins.json');
         if(fs.existsSync(localPluginPath)){
             let localPlugins = require(localPluginPath);
-    
+
             for(let plugin of localPlugins){
                 (require(path.join(this.cwd,'.nide','plugins',plugin)))(this);
             }
@@ -396,7 +445,7 @@ class Nide{
 
     ChangeMode(mode){
         this.mode = mode;
-    
+
         if(mode == 'fexp'){
             this.cursor=0;
             this.cursorLineLevel = 0;
@@ -434,10 +483,10 @@ class Nide{
                 if(this.modes.length == j){
                     j = 0;
                 }
-            }    
-    
+            }
+
             this.ChangeMode(this.modes[j]);
-        
+
             this.ReprintCode();
         }
     }
@@ -457,7 +506,7 @@ class Nide{
 
         if(mode == 'js'){
             compiledCode = `
-                return ((nide)=>{  
+                return ((nide)=>{
 
                     ${code}
 
@@ -477,18 +526,18 @@ class Nide{
                 let compiledLine = '';
 
                 let newArgs = [];
-    
+
                 for(let a of args){
                     if(a!=''){
                         newArgs.push(a);
                     }
                 }
-    
+
                 args = newArgs;
 
                 if(args.length>=1){
                     var command;
-                    
+
                     try{
                         command = require(__dirname+'/commands/'+args[0]);
                         compiledLine = command(args);
@@ -499,13 +548,13 @@ class Nide{
                     finally{
                         compiledCode += compiledLine;
                     }
-                    
+
                 }
-    
+
             }
 
             compiledCode = `
-                return ((nide)=>{  
+                return ((nide)=>{
 
                     ${compiledCode}
 
@@ -518,7 +567,7 @@ class Nide{
 
     ExecCMDCommand(command){
         child_process.exec(
-            command, 
+            command,
             {
                 cwd: this.cwd
             },
@@ -536,7 +585,7 @@ class Nide{
     ExecCMDCommand_InAnotherWindow(command){
         console.log(`\n`);
         child_process.exec(
-            'start cmd.exe /k '+command, 
+            'start cmd.exe /k '+command,
             {
                 cwd: this.cwd
             },
@@ -586,7 +635,7 @@ class Nide{
         let fullPath = path.join(this.cwd,name);
         this.fileName = name;
         if(fs.existsSync(fullPath)){
-            
+
             this.code = this.ConvertToSimpleEOL(fs.readFileSync(fullPath).toString());
 
             this.lastFileOpenedCode = this.code;
@@ -604,11 +653,11 @@ class Nide{
     OpenFile_FULLPATH(fullPath){
         this.cwd = path.dirname(fullPath);
         this.fileName = path.basename(fullPath);
-        
+
 
 
         if(fs.existsSync(fullPath)){
-            
+
             this.code = this.ConvertToSimpleEOL(fs.readFileSync(fullPath).toString());
 
             this.lastFileOpenedCode = this.code;
@@ -661,15 +710,19 @@ class Nide{
         this.ReprintCode();
     }
 
-    RunCode(mode){
+    RunCode(mode,code){
         this.AddToCodeHis(this.code);
+
+        if(code==null){
+            code = this.code;
+        }
 
         let app = this;
 
         if(mode==null){
             mode = this.mode;
         }
-        
+
         if(mode == 'fexp'){
             this.RecalculateCursorLevel();
 
@@ -714,11 +767,11 @@ class Nide{
                         'mode': this.mode,
                         'cwd': path.dirname(filePath)
                     });
-    
+
                     this.ChangeMode('default');
-    
+
                     this.OpenFile_FULLPATH(filePath);
-    
+
                     this.ReprintCode();
                 }
 
@@ -728,19 +781,19 @@ class Nide{
 
         }
 
-        
-        let compiledCode = this.CompileCode(this.code,mode);
+
+        let compiledCode = this.CompileCode(code,mode);
 
         if(mode == 'js'){
             try{
                 let func = Function(compiledCode)();
-                
+
                 this.lastFileOpenedCode = this.code;
-        
+
                 console.clear();
-        
+
                 process.stdout.write(this.AddCoderHeader(''));
-        
+
                 return (func(this));
             }
             catch(err){
@@ -752,11 +805,11 @@ class Nide{
             let cacheFilePath = this.cwd + '/' + this.fileName;//'/nide_code.py';
 
             //fs.writeFileSync(cacheFilePath,compiledCode);
-            
+
             this.lastFileOpenedCode = this.code;
-        
+
             console.clear();
-        
+
             process.stdout.write(this.AddCoderHeader(''));
 
             child_process.exec('start cmd.exe /k py "'+cacheFilePath+'"',{cwd:this.cwd}, (err, stdout, stderr) => {
@@ -771,7 +824,7 @@ class Nide{
         }
         else if(mode == 'default'){
             try{
-        
+
                 this.lastFileOpenedCode = this.code;
 
                 console.clear();
@@ -802,9 +855,9 @@ class Nide{
 
         let GetObjStr = function(){
 
-            
 
-        }   
+
+        }
 
         process.stdout.write(GetObjStr(obj));
 
@@ -859,21 +912,11 @@ class Nide{
 
         if(this.mode!='fexp'){
             this.cursor = clamp(newCursor-1,0,this.code.length);
-            
+
             this.ReprintCode();
         }
         else{
             newCursor--;
-            let t = false;
-            while(this.code[newCursor] == '>' || this.code[newCursor] == '<' || t){
-                if(this.code[newCursor] == '>'){
-                    t = true;
-                }
-                if(t && this.code[newCursor]=='<'){
-                    t = false;
-                }
-                newCursor--;
-            }
             this.cursor = clamp(newCursor,0,this.code.length);
             this.ReprintCode();
         }
@@ -885,21 +928,11 @@ class Nide{
 
         if(this.mode!='fexp'){
             this.cursor = clamp(newCursor+1,0,this.code.length);
-            
+
             this.ReprintCode();
         }
         else{
             newCursor++;
-            let t = false;
-            while(this.code[newCursor] == '<' || this.code[newCursor] == '>' || t){
-                if(this.code[newCursor] == '<'){
-                    t = true;
-                }
-                if(t && this.code[newCursor]=='>'){
-                    t = false;
-                }
-                newCursor++;
-            }
             this.cursor = clamp(newCursor,0,this.code.length);
             this.ReprintCode();
         }
@@ -970,6 +1003,15 @@ class Nide{
 
     }
 
+    ReplaceAll(word1,word2){
+        this.code = this.code.replaceAll(word1,word2);
+        this.cursor = clamp(this.cursor,0,this.code.length);
+
+        this.AddToCodeHis(this.code);
+
+        this.ReprintCode();
+    }
+
     AddCode(key){
         this.code = this.code.substring(0,this.cursor) + key + this.code.substring(this.cursor,this.code.length);
         this.cursor = clamp(this.cursor+key.length,0,this.code.length);
@@ -989,7 +1031,7 @@ class Nide{
             });
         }
         else{
-        
+
             if(this.hisCIndex==this.codeHis.length-1){
                 this.codeHis.push({
                     'code':code,
@@ -1090,16 +1132,16 @@ class Nide{
 
                 if(app.FEXP_openedItems[result.path])
                     for(let item of items){
-        
+
                         try{
                             let newChild = loadFilesTree(path.join(itemPath,item));
-            
+
                             result.childs.push(newChild);
                         }
                         catch{
-                            
+
                         }
-        
+
                     }
 
                 result.type='folder';
@@ -1128,7 +1170,7 @@ class Nide{
         let maxLevel = this.currentFileLevel;
 
         let FEXP_lines = [];
-        
+
         let GetStrFromItem = function(item,level){
 
             let childsStr = '';
@@ -1153,7 +1195,7 @@ class Nide{
                     name += '';
                 }
             }
-            else    
+            else
                 name = '   '+name;
 
 
@@ -1178,7 +1220,7 @@ class Nide{
 
             if(this.code[i] == '\n'){
                 cursorLineLevel++;
-                
+
                 if(i>=this.cursor){
                     break;
                 }
@@ -1217,8 +1259,12 @@ class Nide{
         return this.tabGroups.length+4;
     }
 
+    GetTextEditorCommandLineCount(){
+        return 2;
+    }
+
     GetMaxHeight(){
-        return process.stdout.rows - this.GetHeaderLineCount() - 1;
+        return process.stdout.rows - this.GetHeaderLineCount() - 1 - this.GetTextEditorCommandLineCount();
     }
 
     ReprintCode(option){
@@ -1261,11 +1307,11 @@ class Nide{
         //     if(this.cursor<this.code.length){
         //         if(this.code[this.cursor] == '\n'){
         //             coloredCode = this.code.substring(0,this.cursor) + '\x1b[46m' + ' \x1b[40m' + this.code[this.cursor] + '\x1b[40m' + this.code.substring(this.cursor+1,this.code.length);
-                    
+
         //         }
         //         else{
         //             coloredCode = this.code.substring(0,this.cursor) + '\x1b[46m' + this.code[this.cursor] + '\x1b[40m' + this.code.substring(this.cursor+1,this.code.length);
-                    
+
         //         }
         //     }
         //     else{
@@ -1277,11 +1323,11 @@ class Nide{
             if(this.cursor<this.code.length){
                 if(this.code[this.cursor] == '\n'){
                     coloredCode = this.code.substring(0,this.cursor) + '\x1b[46m' + ' \x1b[45m\x1b[30m' + this.code[this.cursor] + '' + this.code.substring(this.cursor+1,this.code.length);
-                    
+
                 }
                 else{
                     coloredCode = this.code.substring(0,this.cursor) + '\x1b[46m' + this.code[this.cursor] + '\x1b[45m\x1b[30m' + this.code.substring(this.cursor+1,this.code.length);
-                    
+
                 }
             }
             else{
@@ -1301,7 +1347,8 @@ class Nide{
         newCode = this.OptimizeCode(newCode);
 
         newCode = this.AddCoderHeader(newCode);
-        
+
+        newCode = this.AddTextEditorCommandBar(newCode);
 
         this.WriteLines(newCode);
 
@@ -1428,7 +1475,7 @@ class Nide{
         let halfHeight1 = parseInt(this.maxHeight/2);
         let halfHeight2 = this.maxHeight-halfHeight1;
 
-        
+
         eI = cursorLineLevel+halfHeight1;
         bI = cursorLineLevel-halfHeight2+1;
 
@@ -1445,6 +1492,7 @@ class Nide{
         bI = clamp(bI,0,lines.length-1);
         eI = clamp(eI,0,lines.length-1);
 
+        this.textEditorLineCount = eI+1-bI;
 
         for(let i=bI;i<=eI;i++){
 
@@ -1462,7 +1510,7 @@ class Nide{
     GetFileExplorerLine=function(lineLevel){
         return '';
     }
-    
+
     AddFileExplorer(code){
         let newCode = '';
 
