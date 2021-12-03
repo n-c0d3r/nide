@@ -100,6 +100,10 @@ let plugin =  new (class {
 
         this.nide.teCommandCode = plugin.code;
         this.nide.teCommandCursor = plugin.cursor;
+
+        enableTeCommandBar = false;
+
+        this.needReprint = true;
     }
 
     UnlinkFile(name){
