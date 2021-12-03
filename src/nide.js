@@ -363,8 +363,14 @@ class Nide{
         let startFilePath = path.join(this.cwd,'.nide','start.nide');
 
         if(fs.existsSync(startFilePath)){
-            this.code = this.ConvertToSimpleEOL(fs.readFileSync(startFilePath).toString());
-            this.RunCode('default');
+            this.RunCode('default',this.ConvertToSimpleEOL(fs.readFileSync(startFilePath).toString()));
+        }
+
+        let startJSFilePath = path.join(this.cwd,'.nide','start.js');
+
+        if(fs.existsSync(startJSFilePath)){
+            let code = this.ConvertToSimpleEOL(fs.readFileSync(startJSFilePath).toString());
+            this.RunCode('js',code);
         }
     }
 
