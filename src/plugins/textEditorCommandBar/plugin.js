@@ -140,20 +140,28 @@ let plugin =  new (class {
     
                 keywordIndex = code.indexOf(keyword,keywordIndex+keyword.length);
             }
-    
-            this.foundedCursorIndex = 0;
+            
 
-            this.nide.cursor = this.foundedCursor[this.foundedCursorIndex];
+            if(this.foundedCursor.length==0){
+                this.isFinding = false;
+            }
+            else{
+                this.foundedCursorIndex = 0;
     
-            // this.code = '';
-            // this.cursor = 0;
-    
-            // this.nide.teCommandCode = plugin.code;
-            // this.nide.teCommandCursor = plugin.cursor;
-    
-            this.isFinding = true;
-    
+                this.nide.cursor = this.foundedCursor[this.foundedCursorIndex];
+        
+                // this.code = '';
+                // this.cursor = 0;
+        
+                // this.nide.teCommandCode = plugin.code;
+                // this.nide.teCommandCursor = plugin.cursor;
+        
+                this.isFinding = true;
+        
+            }
+
             this.needReprint = true;
+    
         }
         else{
             this.foundedCursor = [];
@@ -213,6 +221,9 @@ module.exports = (nide)=>{
     
                 
                 if(key!=null){
+                    if(key && key.name == "return"){
+                        return;
+                    }
                     if(key && key.name == "backspace"){
                         plugin.Backspace();
                         return;
