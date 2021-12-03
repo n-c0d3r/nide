@@ -29,6 +29,21 @@ module.exports = (args)=>{
             if(args[1]=='replace'){
                 return `nide.TextEditorCommandBarPlugin.Replace('${args[2]}','${args[3]}');`;
             }
+            if(args[1]=='newdir'){
+                return `nide.TextEditorCommandBarPlugin.NewDir(${args[2]});`;
+            }
+            if(args[1]=='mkdir'){
+                return `nide.TextEditorCommandBarPlugin.NewDir(${args[2]});`;
+            }
+            if(args[1]=='newfile'){
+                return `nide.TextEditorCommandBarPlugin.NewFile(${args[2]});`;
+            }
+            if(args[1]=='rmdir'){
+                return `nide.TextEditorCommandBarPlugin.RemoveDir(${args[2]});`;
+            }
+            if(args[1]=='unlink'){
+                return `nide.TextEditorCommandBarPlugin.UnlinkFile(${args[2]});`;
+            }
         })()}
     `;
 }

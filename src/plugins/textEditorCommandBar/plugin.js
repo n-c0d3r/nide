@@ -1,5 +1,8 @@
 const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
 
+const fs = require('fs');
+const path = require('path');
+
 var enableTeCommandBar = false;
 
 let plugin =  new (class {
@@ -99,6 +102,198 @@ let plugin =  new (class {
         this.nide.teCommandCursor = plugin.cursor;
     }
 
+    UnlinkFile(name){
+
+        this.code = '';
+        this.cursor = 0;
+
+        if(this.nide.mode == 'fexp'){
+            this.nide.RecalculateCursorLevel();
+
+            let stat = fs.statSync(this.nide.FEXP_lines[this.nide.cursorLineLevel]);
+
+            let dirPath = '';
+
+            if(stat.isDirectory()){
+                dirPath = path.normalize(this.nide.FEXP_lines[this.nide.cursorLineLevel]);
+            }
+            else{
+                dirPath = path.normalize(path.dirname(this.nide.FEXP_lines[this.nide.cursorLineLevel]));
+            }
+
+            let filePath = '';
+
+            if(name==null){
+                filePath = this.nide.FEXP_lines[this.nide.cursorLineLevel];
+            }
+            else filePath = path.join(dirPath,name);
+            
+            if(fs.existsSync(filePath)){
+                fs.unlinkSync(filePath);
+            }
+
+
+            enableTeCommandBar = false;
+
+            this.needReprint = true;
+
+            this.nide.LoadFilesTree();
+
+        }
+
+        this.nide.teCommandCode = plugin.code;
+        this.nide.teCommandCursor = plugin.cursor;
+    }
+
+    RemoveDir(name){
+
+        this.code = '';
+        this.cursor = 0;
+
+        if(this.nide.mode == 'fexp'){
+            this.nide.RecalculateCursorLevel();
+
+            let stat = fs.statSync(this.nide.FEXP_lines[this.nide.cursorLineLevel]);
+
+            let dirPath = '';
+
+            if(name!=null){
+                if(stat.isDirectory()){
+                    dirPath = path.normalize(this.nide.FEXP_lines[this.nide.cursorLineLevel]);
+                }
+                else{
+                    dirPath = path.normalize(path.dirname(this.nide.FEXP_lines[this.nide.cursorLineLevel]));
+                }
+    
+                dirPath = path.join(dirPath,name);
+            }
+            else{
+                dirPath = this.nide.FEXP_lines[this.nide.cursorLineLevel];
+            }
+
+            try{
+                if(fs.existsSync(dirPath)){
+                    
+                    let rmDirSync = function(p){
+    
+                        let items = fs.readdirSync(p);
+    
+                        for(let item of items){
+                            if(fs.statSync(path.join(p,item)).isDirectory()){
+                                rmDirSync(path.join(p,item));
+                            }
+                            else{
+                                fs.unlinkSync(path.join(p,item));
+                            }
+                        }
+    
+                        fs.rmdirSync(p);
+    
+                    }
+    
+                    rmDirSync(dirPath);
+    
+                }
+            }
+            catch(err){
+                
+            }
+
+
+            enableTeCommandBar = false;
+
+            this.needReprint = true;
+
+            this.nide.LoadFilesTree();
+
+        }
+
+        this.nide.teCommandCode = plugin.code;
+        this.nide.teCommandCursor = plugin.cursor;
+    }
+
+    NewDir(name){
+
+        this.code = '';
+        this.cursor = 0;
+
+        if(this.nide.mode == 'fexp'){
+            this.nide.RecalculateCursorLevel();
+
+            let stat = fs.statSync(this.nide.FEXP_lines[this.nide.cursorLineLevel]);
+
+            let dirPath = '';
+
+            if(name!=null){
+                if(stat.isDirectory()){
+                    dirPath = path.normalize(this.nide.FEXP_lines[this.nide.cursorLineLevel]);
+                }
+                else{
+                    dirPath = path.normalize(path.dirname(this.nide.FEXP_lines[this.nide.cursorLineLevel]));
+                }
+    
+                dirPath = path.join(dirPath,name);
+            }
+            else{
+                dirPath = this.nide.FEXP_lines[this.nide.cursorLineLevel];
+            }
+
+            if(!fs.existsSync(dirPath))
+                fs.mkdirSync(dirPath);
+
+            enableTeCommandBar = false;
+
+            this.needReprint = true;
+
+            this.nide.LoadFilesTree();
+
+        }
+
+        this.nide.teCommandCode = plugin.code;
+        this.nide.teCommandCursor = plugin.cursor;
+    }
+
+    NewFile(name){
+
+        this.code = '';
+        this.cursor = 0;
+
+        if(this.nide.mode == 'fexp'){
+            this.nide.RecalculateCursorLevel();
+
+            let stat = fs.statSync(this.nide.FEXP_lines[this.nide.cursorLineLevel]);
+
+            let dirPath = '';
+
+            if(stat.isDirectory()){
+                dirPath = path.normalize(this.nide.FEXP_lines[this.nide.cursorLineLevel]);
+            }
+            else{
+                dirPath = path.normalize(path.dirname(this.nide.FEXP_lines[this.nide.cursorLineLevel]));
+            }
+
+            let filePath = '';
+
+            if(name==null){
+                filePath = this.nide.FEXP_lines[this.nide.cursorLineLevel];
+            }
+            else filePath = path.join(dirPath,name);
+
+            if(!fs.existsSync(filePath))
+                fs.writeFileSync(filePath,'');
+
+            enableTeCommandBar = false;
+
+            this.needReprint = true;
+
+            this.nide.LoadFilesTree();
+
+        }
+
+        this.nide.teCommandCode = plugin.code;
+        this.nide.teCommandCursor = plugin.cursor;
+    }
+
     FindUp(){
         if(this.foundedCursorIndex-1 == -1){
             this.foundedCursorIndex = this.foundedCursor.length-1;
@@ -174,6 +369,8 @@ let plugin =  new (class {
             this.nide.teCommandCode = plugin.code;
             this.nide.teCommandCursor = plugin.cursor;
             this.isFinding = false;
+
+            enableTeCommandBar = false;
     
             this.needReprint = true;
         }
