@@ -29,20 +29,24 @@ const withLineIndicesCode = function(coloredCode,maxSpaces,cursorLineLevel,nide)
     let lineLevel = 0;
 
     if(cursorLineLevel != lineLevel){
-        coloredCode = '\x1b[30m\x1b[1m'+spaces(maxSpaces)+'0 '+'|\x1b[0m'+(()=>{
-            if(0>=nide.startSelectAfterColored || 0<=nide.endSelectAfterColored){
-                return '\x1b[30m\x1b[43m';
+        coloredCode = '\x1b[30m\x1b[1m'+spaces(maxSpaces)+'0 '+'|\x1b[0m'+
+        (()=>{
+            if(0>=nide.startSelectAfterColored && 0<=nide.endSelectAfterColored){
+                return '\x1b[47m\x1b[30m';
             }
             return '';
-        })()+coloredCode;
+        })()
+        +coloredCode;
     }
     else{
-        coloredCode = '\x1b[35m'+spaces(maxSpaces)+'0 '+'\x1b[0m|\x1b[0m\x1b[45m\x1b[30m'+(()=>{
-            if(0>=nide.startSelectAfterColored || 0<=nide.endSelectAfterColored){
-                return '\x1b[30m\x1b[43m';
+        coloredCode = '\x1b[35m'+spaces(maxSpaces)+'0 '+'\x1b[0m|\x1b[0m\x1b[45m\x1b[30m'+
+        (()=>{
+            if(0>=nide.startSelectAfterColored && 0<=nide.endSelectAfterColored){
+                return '\x1b[47m\x1b[30m';
             }
             return '';
-        })()+coloredCode;
+        })()
+        +coloredCode;
     }
 
     for(let i = 0;i<coloredCode.length;i++){
@@ -53,16 +57,16 @@ const withLineIndicesCode = function(coloredCode,maxSpaces,cursorLineLevel,nide)
             lineLevel++;
             if(cursorLineLevel != lineLevel){
                 newCode += '\x1b[0m\x1b[30m\x1b[1m' + spaces(maxSpaces - lineLevel.toString().length + 1) + lineLevel + ' |\x1b[0m' + (()=>{
-                    if(i>=nide.startSelectAfterColored || i<=nide.endSelectAfterColored){
-                        return '\x1b[30m\x1b[43m';
+                    if(i>=nide.startSelectAfterColored && i<=nide.endSelectAfterColored){
+                        return '\x1b[47m\x1b[30m';
                     }
                     return '';
                 })();
             }
             else{
                 newCode += '\x1b[0m\x1b[35m' + spaces(maxSpaces - lineLevel.toString().length + 1) + lineLevel + ' \x1b[0m|\x1b[0m\x1b[45m\x1b[30m' + (()=>{
-                    if(i>=nide.startSelectAfterColored || i<=nide.endSelectAfterColored){
-                        return '\x1b[30m\x1b[43m';
+                    if(i>=nide.startSelectAfterColored && i<=nide.endSelectAfterColored){
+                        return '\x1b[47m\x1b[30m';
                     }
                     return '';
                 })();
@@ -182,8 +186,8 @@ class Nide{
 
             app.enableTextEditor = true;
             
-            app.startSelect = 9;
-            app.endSelect = app.code.length-1;
+            app.startSelect = 100;
+            app.endSelect = app.code.length-10;
 
             for(let keypressEventListener of app.keypressEventListeners){
                 keypressEventListener(ch,key);
@@ -1402,6 +1406,8 @@ class Nide{
 
         this.console.HideCursor();
 
+        var app = this;
+
         if(this.mode == 'fexp'){
             this.LoadFilesToCode();
         }
@@ -1430,15 +1436,22 @@ class Nide{
 
         this.RecalculateCursorLevel();
 
+        let haveSpaceAfterNewLine = false;
 
         if(!(option.printColoredCode == true)){
             if(this.cursor<this.code.length){
                 if(this.code[this.cursor] == '\n'){
+                    haveSpaceAfterNewLine = true;
                     coloredCode = this.code.substring(0,this.cursor) + '\x1b[46m' + ' \x1b[45m\x1b[30m' + this.code[this.cursor] + '' + this.code.substring(this.cursor+1,this.code.length);
 
                 }
                 else{
-                    coloredCode = this.code.substring(0,this.cursor) + '\x1b[46m' + this.code[this.cursor] + '\x1b[45m\x1b[30m' + this.code.substring(this.cursor+1,this.code.length);
+                    coloredCode = this.code.substring(0,this.cursor) + '\x1b[46m' + this.code[this.cursor] + (()=>{
+                        if(app.cursor >= app.startSelect && app.cursor < app.endSelect){
+                            return '\x1b[30m\x1b[47m';
+                        }
+                        return '\x1b[45m\x1b[30m';
+                    })() + this.code.substring(this.cursor+1,this.code.length);
 
                 }
             }
@@ -1450,10 +1463,14 @@ class Nide{
 
         this.startSelectAfterColored = this.startSelect;
         this.endSelectAfterColored = this.endSelect;
+        this.cursorAfterColored = this.endSelect;
 
         let j = 0;
+        let lineLevel = 0;
+        let endSelectAfterColoredLineLevel = 0;
         for(let i=0;i<coloredCode.length;i++){
             if(coloredCode[i] == '\x1b' && coloredCode[i+1] == '['){
+                i+=1;
                 for(;i<coloredCode.length;i++){
                     if(coloredCode[i]=='m'){
                         break;
@@ -1462,20 +1479,49 @@ class Nide{
                 continue;
             }
 
+            if(coloredCode[i]=='\n'){
+                lineLevel++;
+                if(haveSpaceAfterNewLine){
+                    if(lineLevel-1 == this.cursorLineLevel){
+                        continue;
+                    }
+                }
+            }
+
             if(j == this.startSelect){
                 this.startSelectAfterColored = i;
             }
 
             if(j == this.endSelect){
                 this.endSelectAfterColored = i;
+                endSelectAfterColoredLineLevel = lineLevel;
+            }
+
+            if(j == this.cursor){
+                this.cursorAfterColored = i;
             }
 
             j++;
         }
 
-        coloredCode = coloredCode.substring(0,this.startSelectAfterColored) + '\x1b[43m\x1b[30m' + coloredCode.substring(this.startSelectAfterColored,coloredCode.length);
+        if(this.startSelect>=0 && this.endSelect>=0 && this.startSelectAfterColored != this.endSelectAfterColored){
 
-        coloredCode = this.startSelectAfterColored+' '+coloredCode;
+           let offset = 0;
+
+            if(this.startSelectAfterColored != this.cursorAfterColored){
+               offset += 10;
+               coloredCode = coloredCode.substring(0,this.startSelectAfterColored) + '\x1b[47m\x1b[30m' + coloredCode[this.startSelectAfterColored] + '' + coloredCode.substring(this.startSelectAfterColored+1,coloredCode.length); 
+            }
+
+            if(this.endSelectAfterColored != this.cursorAfterColored){
+                coloredCode = coloredCode.substring(0,this.endSelectAfterColored+offset) + coloredCode[this.endSelectAfterColored+offset] + (()=>{
+                    if(lineLevel == this.cursorLineLevel){
+                        return '\x1b[30m\x1b[45m';
+                    }
+                    return '\x1b[0m';
+                })() + coloredCode.substring(this.endSelectAfterColored+offset+1,coloredCode.length); 
+            }
+        }
 
         if(this.mode == 'fexp'){
             //coloredCode = this.CompileColorSyntax(coloredCode);

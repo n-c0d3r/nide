@@ -1,0 +1,51 @@
+MODES:
+     js
+     py
+     fexp
+
+KEYS:
+     Alt + O: Run Code, Open Item (FEXP Mode), Run Or Close Command In Text Editor Command Bar
+     Ctrl + O: Enable Or Disable Text Editor Command Bar
+     Alt + P: Clear Code Or Reload Items In FEXP Mode
+     Esc: Exit Nide Tool
+     Alt + Q: Set Mode To Default
+     Alt + M: Get Last Code Saved Or Before Running Code
+     Ctrl + S: Save Code
+     Alt + A: Go To Next Tab
+     Alt + D: Open New Tab
+     Alt + N: Remove Current Tab
+     Alt + W: Reload File
+     Alt + G: Change Mode (Except FEXP Mode)
+     Alt + X: Delete Current Line
+     Alt + S: Change Tab Group
+     Alt + J: The Same As Left Arrow
+     Alt + L: The Same As Right Arrow
+     Alt + K: The Same As Down Arrow
+     Alt + I: The Same As Up Arrow
+
+COMMANDS:
+     help: Help
+     mode {modeName}: Set Mode
+     cls: Clear Code
+     exit: Exit Nide Tool
+     cd "{path}": Change Directory
+     cp "{partition}": Change Partition
+     cf "{file name}": Change File Name
+     jsopen "{filePath}": Open JS File In JS Mode
+     pyopen "{filePath}": Open PY File In PY Mode
+     open: Open File In Current Mode
+     $ {command}: Run Default Windows Terminal Commands
+     $$ {command}: Run Default Windows Terminal Commands In Another Window
+     newgroup: Create New Tab Group
+     deletegroup {index}: Delete Group By Index
+     deletegroup: Delete Current Group
+     newtab: Create New Tab
+     nexttab: Go To Next Tab
+     reloadfile: Reload Current File
+     te {command}:Run Text Editor Command Bar Command
+     te find {keyword}: Find Keyword
+     te replace {word1} {word2}: Relace Word
+     te mkdir "{dir name}": Create New Dir
+     te newfile "{file name}": Create New File
+     te rmdir "{dir name}": Remove Dir
+     te unlink "{file name}": Remove File
