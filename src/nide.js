@@ -147,9 +147,6 @@ class Nide{
 
         this.cursor = 0;
 
-        this.codeHis = [];
-        this.hisCIndex = 0;
-
         this.selectedBIndex=-1;
         this.selectedEIndex=-1;
 
@@ -162,8 +159,16 @@ class Nide{
             'code': this.code,
             'fileName': this.fileName,
             'mode': this.mode,
-            'cwd': this.cwd
+            'cwd': this.cwd,
+            'codeHis':[{
+                'code':'',
+                'cursor':0
+            }],
+            'hisCIndex':0
         };
+
+        this.codeHis = this.tabs[0].codeHis;
+        this.hisCIndex = this.tabs[0].hisCIndex;
 
         this.tabGroups = [];
 
@@ -376,7 +381,12 @@ class Nide{
                         'code': '',
                         'fileName': app.defaultFileName,
                         'mode': app.mode,
-                        'cwd': app.cwd
+                        'cwd': app.cwd,
+                        'codeHis':[{
+                            'code':'',
+                            'cursor':0
+                        }],
+                        'hisCIndex':0
                     });
                     return;
                 }
@@ -808,7 +818,12 @@ class Nide{
                 'code': '',
                 'fileName': app.defaultFileName,
                 'mode': app.mode,
-                'cwd': app.cwd
+                'cwd': app.cwd,
+                'codeHis':[{
+                    'code':'',
+                    'cursor':0
+                }],
+                'hisCIndex':0
             }],
             'currentTabIndex':0
         });
@@ -897,7 +912,12 @@ class Nide{
                         'code': '',
                         'fileName': path.basename(filePath),
                         'mode': this.mode,
-                        'cwd': path.dirname(filePath)
+                        'cwd': path.dirname(filePath),
+                        'codeHis':[{
+                            'code':'',
+                            'cursor':0
+                        }],
+                        'hisCIndex':0
                     });
 
                     this.ChangeMode('default');
@@ -1010,6 +1030,9 @@ class Nide{
         this.mode = this.tabs[this.currentTabIndex].mode;
         this.fileName = this.tabs[this.currentTabIndex].fileName;
         this.cursor = this.tabs[this.currentTabIndex].cursor;
+
+        this.codeHis = this.tabs[this.currentTabIndex].codeHis;
+        this.hisCIndex = this.tabs[this.currentTabIndex].hisCIndex;
 
         this.tabGroups[this.tabGroupIndex].tabs = this.tabs;
         this.tabGroups[this.tabGroupIndex].currentTabIndex = this.currentTabIndex;
@@ -1238,6 +1261,8 @@ class Nide{
     AddToCodeHis(code){
         this.fileStatus = '*';
 
+
+
         if(this.codeHis.length==0){
             this.codeHis.push({
                 'code':code,
@@ -1254,7 +1279,7 @@ class Nide{
                 this.hisCIndex++;
             }
             else{
-                this.codeHis.splice(this.hisCIndex,this.codeHis.length-this.hisCIndex);
+                this.codeHis.splice(this.hisCIndex+1,this.codeHis.length-this.hisCIndex);
                 this.codeHis.push({
                     'code':code,
                     'cursor':this.cursor
@@ -1262,18 +1287,21 @@ class Nide{
                 this.hisCIndex++;
             }
         }
+        
+
+        this.tabs[this.currentTabIndex].codeHis = this.codeHis;
+        this.tabs[this.currentTabIndex].hisCIndex = this.hisCIndex;
+        
+
+        this.tabGroups[this.tabGroupIndex].tabs = this.tabs;
+        this.tabGroups[this.tabGroupIndex].currentTabIndex = this.currentTabIndex;
 
     }
 
     Undo(){
-        this.hisCIndex = clamp(this.hisCIndex-1,-1,this.codeHis.length-1);
 
-        if(this.hisCIndex==-1){
-            this.code='';
-            this.cursor=0;
-            this.ReprintCode();
-            return;
-        }
+        this.hisCIndex = clamp(this.hisCIndex-1,0,this.codeHis.length-1);
+
 
         this.selectMode = 0;
         this.startSelect = -1;
@@ -1281,18 +1309,21 @@ class Nide{
 
         this.code = this.codeHis[this.hisCIndex].code;
         this.cursor = this.codeHis[this.hisCIndex].cursor;
+        
+
+        this.tabs[this.currentTabIndex].codeHis = this.codeHis;
+        this.tabs[this.currentTabIndex].hisCIndex = this.hisCIndex;
+        
+
+        this.tabGroups[this.tabGroupIndex].tabs = this.tabs;
+        this.tabGroups[this.tabGroupIndex].currentTabIndex = this.currentTabIndex;
+
         this.ReprintCode();
     }
 
     Redo(){
-        this.hisCIndex = clamp(this.hisCIndex+1,-1,this.codeHis.length-1);
+        this.hisCIndex = clamp(this.hisCIndex+1,0,this.codeHis.length-1);
 
-        if(this.hisCIndex==-1){
-            this.code='';
-            this.cursor=0;
-            this.ReprintCode();
-            return;
-        }
 
         this.selectMode = 0;
         this.startSelect = -1;
@@ -1300,6 +1331,15 @@ class Nide{
 
         this.code = this.codeHis[this.hisCIndex].code;
         this.cursor = this.codeHis[this.hisCIndex].cursor;
+        
+
+        this.tabs[this.currentTabIndex].codeHis = this.codeHis;
+        this.tabs[this.currentTabIndex].hisCIndex = this.hisCIndex;
+        
+
+        this.tabGroups[this.tabGroupIndex].tabs = this.tabs;
+        this.tabGroups[this.tabGroupIndex].currentTabIndex = this.currentTabIndex;
+
         this.ReprintCode();
     }
 
