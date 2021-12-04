@@ -41,7 +41,7 @@ const withLineIndicesCode = function(coloredCode,maxSpaces,cursorLineLevel,nide)
     else{
         coloredCode = '\x1b[35m'+spaces(maxSpaces)+'0 '+'\x1b[0m|\x1b[0m\x1b[45m\x1b[30m'+
         (()=>{
-            if(0>=nide.startSelectAfterColored && 0<=nide.endSelectAfterColored){
+            if(0>=nide.afterStartSelectLine && 0<=nide.beforeEndSelectLine){
                 return '\x1b[47m\x1b[30m';
             }
             return '';
@@ -57,18 +57,18 @@ const withLineIndicesCode = function(coloredCode,maxSpaces,cursorLineLevel,nide)
             lineLevel++;
             if(cursorLineLevel != lineLevel){
                 newCode += '\x1b[0m\x1b[30m\x1b[1m' + spaces(maxSpaces - lineLevel.toString().length + 1) + lineLevel + ' |\x1b[0m' + (()=>{
-                    if(i>=nide.startSelectAfterColored && i<=nide.endSelectAfterColored){
+                    if(lineLevel>=nide.afterStartSelectLine && lineLevel<=nide.beforeEndSelectLine){
                         return '\x1b[47m\x1b[30m';
                     }
                     return '';
                 })();
             }
             else{
-                newCode += '\x1b[0m\x1b[35m' + spaces(maxSpaces - lineLevel.toString().length + 1) + lineLevel + ' \x1b[0m|\x1b[0m\x1b[45m\x1b[30m' + (()=>{
-                    if(i>=nide.startSelectAfterColored && i<=nide.endSelectAfterColored){
+                newCode += '\x1b[0m\x1b[35m' + spaces(maxSpaces - lineLevel.toString().length + 1) + lineLevel + ' \x1b[0m|' + (()=>{
+                    if(lineLevel>=nide.afterStartSelectLine && lineLevel<=nide.beforeEndSelectLine){
                         return '\x1b[47m\x1b[30m';
                     }
-                    return '';
+                    return '\x1b[0m\x1b[45m\x1b[30m';
                 })();
             }
         }
@@ -1464,6 +1464,9 @@ class Nide{
         this.startSelectAfterColored = this.startSelect;
         this.endSelectAfterColored = this.endSelect;
         this.cursorAfterColored = this.endSelect;
+        
+        this.afterStartSelectLine = 0;
+        this.beforeEndSelectLine = 0;
 
         let j = 0;
         let lineLevel = 0;
@@ -1490,11 +1493,13 @@ class Nide{
 
             if(j == this.startSelect){
                 this.startSelectAfterColored = i;
+                this.afterStartSelectLine = lineLevel+1;
             }
 
             if(j == this.endSelect){
                 this.endSelectAfterColored = i;
                 endSelectAfterColoredLineLevel = lineLevel;
+                this.beforeEndSelectLine = lineLevel-1;
             }
 
             if(j == this.cursor){
