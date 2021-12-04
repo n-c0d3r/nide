@@ -1615,6 +1615,7 @@ class Nide{
 
         let j = 0;
         let lineLevel = 0;
+        let lineLevel2 = 0;
         let endSelectAfterColoredLineLevel = 0;
         for(let i=0;i<coloredCode.length;i++){
             if(coloredCode[i] == '\x1b' && coloredCode[i+1] == '['){
@@ -1642,6 +1643,7 @@ class Nide{
             if(j == this.endSelect){
                 this.endSelectAfterColored = i;
                 endSelectAfterColoredLineLevel = lineLevel;
+                lineLevel2 = lineLevel;
                 this.beforeEndSelectLine = lineLevel-1;
             }
 
@@ -1660,6 +1662,8 @@ class Nide{
             j++;
         }
 
+
+
         if(this.startSelect>=0 && this.endSelect>=0){
 
            let offset = 0;
@@ -1671,7 +1675,7 @@ class Nide{
 
             if(this.endSelectAfterColored != this.cursorAfterColored){
                 coloredCode = coloredCode.substring(0,this.endSelectAfterColored+offset) + coloredCode[this.endSelectAfterColored+offset] + (()=>{
-                    if(lineLevel == this.cursorLineLevel){
+                    if(lineLevel2 == app.cursorLineLevel){
                         return '\x1b[30m\x1b[45m';
                     }
                     return '\x1b[0m';
