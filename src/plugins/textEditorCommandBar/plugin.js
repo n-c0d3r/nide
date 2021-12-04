@@ -151,6 +151,21 @@ let plugin =  new (class {
         this.needReprint = true;
     }
 
+    Goto(cursor){   
+        this.nide.cursor = clamp(cursor,0,this.nide.code.length);
+
+        this.code = '';
+        this.cursor = 0;
+
+        this.nide.teCommandCode = plugin.code;
+        this.nide.teCommandCursor = plugin.cursor;
+
+        enableTeCommandBar = false;
+
+        this.needReprint = true;
+        
+    }
+
     Replace(word1,word2){
 
         this.nide.ReplaceAll(word1,word2);

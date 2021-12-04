@@ -310,6 +310,13 @@ class Nide{
                     app.SaveFile();
                     return;
                 }
+                if(key && key.ctrl && key.name == "a"){
+                    app.selectMode = 2;
+                    app.startSelect = 0;//clamp(app.cursor,0,app.code.length-1);
+                    app.endSelect = app.code.length-1;
+                    app.ReprintCode();
+                    return;
+                }
                 if(key && key.meta && key.name == "m"){
                     app.selectMode++;
                     if(app.selectMode==3){

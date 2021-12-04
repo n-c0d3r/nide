@@ -44,6 +44,9 @@ module.exports = (args)=>{
             if(args[1]=='unlink'){
                 return `nide.TextEditorCommandBarPlugin.UnlinkFile(${args[2]});`;
             }
+            if(args[1]=='goto'){
+                return `nide.TextEditorCommandBarPlugin.Goto(${args[2]});`;
+            }
         })()}
     `;
 }
