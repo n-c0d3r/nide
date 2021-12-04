@@ -12,6 +12,7 @@
     "nide": "./src/index.js"
   },
   "dependencies": {
+    "clipboardy": "^3.0.0",
     "hide-terminal-cursor": "0.0.1",
     "keypress": "^0.2.1",
     "show-terminal-cursor": "0.0.2",
