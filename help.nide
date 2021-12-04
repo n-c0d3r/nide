@@ -9,7 +9,8 @@ KEYS:
      Alt + P: Clear Code Or Reload Items In FEXP Mode
      Esc: Exit Nide Tool
      Alt + Q: Set Mode To Default
-     Alt + M: Get Last Code Saved Or Before Running Code
+     Alt + M: Select Text In Text Editor
+     Ctrl + A: Select All Text In Text Editor
      Ctrl + S: Save Code
      Alt + A: Go To Next Tab
      Alt + D: Open New Tab

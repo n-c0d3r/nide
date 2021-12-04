@@ -332,6 +332,11 @@ class Nide{
                     }
                     if(app.selectMode==2){
                         app.endSelect = clamp(app.cursor,0,app.code.length-1);
+                        if(app.endSelect<app.startSelect){
+                            const tg = app.startSelect;
+                            app.startSelect = app.endSelect;
+                            app.endSelect = tg;
+                        }
                     }
                     app.ReprintCode();
                     return;
@@ -1124,68 +1129,79 @@ class Nide{
 
     AddCode(key){
 
-        let cursor_offset = 0;
+        if(this.selectMode == 0){
 
-        if(this.mode=='js' || this.mode=='py' || this.mode == 'default'){
-            if(key=='[' && this.code[this.cursor]!=']'){
-                key+=']';
-                cursor_offset = -1;
-            }
-            if(key=='"' && this.code[this.cursor]!='"'){
-                key+='"';
-                cursor_offset = -1;
-            }
-
-            if(this.mode=='js')
-                if(key=='`' && this.code[this.cursor]!='`'){
-                    key+='`';
+            let cursor_offset = 0;
+    
+            if(this.mode=='js' || this.mode=='py' || this.mode == 'default'){
+                if(key=='[' && this.code[this.cursor]!=']'){
+                    key+=']';
                     cursor_offset = -1;
                 }
-
-            if(key=="'" && this.code[this.cursor]!="'"){
-                key+="'";
-                cursor_offset = -1;
+                if(key=='"' && this.code[this.cursor]!='"'){
+                    key+='"';
+                    cursor_offset = -1;
+                }
+    
+                if(this.mode=='js')
+                    if(key=='`' && this.code[this.cursor]!='`'){
+                        key+='`';
+                        cursor_offset = -1;
+                    }
+    
+                if(key=="'" && this.code[this.cursor]!="'"){
+                    key+="'";
+                    cursor_offset = -1;
+                }
+                if(key=='{' && this.code[this.cursor]!='}'){
+                    key+='}';
+                    cursor_offset = -1;
+                }
+                if(key=='(' && this.code[this.cursor]!=')'){
+                    key+=')';
+                    cursor_offset = -1;
+                }
+    
+                if(key==')' && this.code[this.cursor]==')'){
+                    key='';
+                    cursor_offset = 1;
+                }
+                if(key==']' && this.code[this.cursor]==']'){
+                    key='';
+                    cursor_offset = 1;
+                }
+                if(key=='}' && this.code[this.cursor]=='}'){
+                    key='';
+                    cursor_offset = 1;
+                }
+                
+                if(key=='"' && this.code[this.cursor]=='"'){
+                    key='';
+                    cursor_offset = 1;
+                }
+                
+                if(key=="'" && this.code[this.cursor]=="'"){
+                    key='';
+                    cursor_offset = 1;
+                }
+                
+                if(key=='`' && this.code[this.cursor]=='`'){
+                    key='';
+                    cursor_offset = 1;
+                }
             }
-            if(key=='{' && this.code[this.cursor]!='}'){
-                key+='}';
-                cursor_offset = -1;
-            }
-            if(key=='(' && this.code[this.cursor]!=')'){
-                key+=')';
-                cursor_offset = -1;
-            }
-
-            if(key==')' && this.code[this.cursor]==')'){
-                key='';
-                cursor_offset = 1;
-            }
-            if(key==']' && this.code[this.cursor]==']'){
-                key='';
-                cursor_offset = 1;
-            }
-            if(key=='}' && this.code[this.cursor]=='}'){
-                key='';
-                cursor_offset = 1;
-            }
-            
-            if(key=='"' && this.code[this.cursor]=='"'){
-                key='';
-                cursor_offset = 1;
-            }
-            
-            if(key=="'" && this.code[this.cursor]=="'"){
-                key='';
-                cursor_offset = 1;
-            }
-            
-            if(key=='`' && this.code[this.cursor]=='`'){
-                key='';
-                cursor_offset = 1;
-            }
+    
+            this.code = this.code.substring(0,this.cursor) + key + this.code.substring(this.cursor,this.code.length);
+            this.cursor = clamp(this.cursor+key.length+cursor_offset,0,this.code.length);
+        }
+        else{
+            this.Delete();
+            this.AddCode(key);
         }
 
-        this.code = this.code.substring(0,this.cursor) + key + this.code.substring(this.cursor,this.code.length);
-        this.cursor = clamp(this.cursor+key.length+cursor_offset,0,this.code.length);
+        this.selectMode = 0;
+        this.startSelect = -1;
+        this.endSelect = -1;
 
         this.AddToCodeHis(this.code);
 
@@ -1232,6 +1248,10 @@ class Nide{
             return;
         }
 
+        this.selectMode = 0;
+        this.startSelect = -1;
+        this.endSelect = -1;
+
         this.code = this.codeHis[this.hisCIndex].code;
         this.cursor = this.codeHis[this.hisCIndex].cursor;
         this.ReprintCode();
@@ -1247,14 +1267,28 @@ class Nide{
             return;
         }
 
+        this.selectMode = 0;
+        this.startSelect = -1;
+        this.endSelect = -1;
+
         this.code = this.codeHis[this.hisCIndex].code;
         this.cursor = this.codeHis[this.hisCIndex].cursor;
         this.ReprintCode();
     }
 
     Backspace(){
-        this.code = this.code.substring(0,this.cursor-1) + this.code.substring(this.cursor,this.code.length);
-        this.cursor = clamp(this.cursor-1,0,this.code.length);
+        if(this.selectMode == 0){
+            this.code = this.code.substring(0,this.cursor-1) + this.code.substring(this.cursor,this.code.length);
+            this.cursor = clamp(this.cursor-1,0,this.code.length);
+
+        }
+        else{
+            this.code = this.code.substring(0,this.startSelect) + this.code.substring(this.endSelect+1,this.code.length);
+        }
+
+        this.selectMode = 0;
+        this.startSelect = -1;
+        this.endSelect = -1;
 
         this.AddToCodeHis(this.code);
 
@@ -1262,7 +1296,18 @@ class Nide{
     }
 
     Delete(){
-        this.code = this.code.substring(0,this.cursor) + this.code.substring(this.cursor+1,this.code.length);
+        if(this.selectMode == 0){
+            this.code = this.code.substring(0,this.cursor) + this.code.substring(this.cursor+1,this.code.length);
+
+        }
+        else{
+            this.code = this.code.substring(0,this.startSelect) + this.code.substring(this.endSelect+1,this.code.length);
+        }
+
+        this.selectMode = 0;
+        this.startSelect = -1;
+        this.endSelect = -1;
+
 
         this.AddToCodeHis(this.code);
 
@@ -1486,7 +1531,7 @@ class Nide{
                 }
                 else{
                     coloredCode = this.code.substring(0,this.cursor) + '\x1b[46m' + this.code[this.cursor] + (()=>{
-                        if(app.cursor >= app.startSelect && app.cursor < app.endSelect){
+                        if(app.cursor >= app.startSelect && app.cursor < app.endSelect && app.selectMode!=0){
                             return '\x1b[30m\x1b[47m';
                         }
                         return '\x1b[45m\x1b[30m';
@@ -1523,16 +1568,14 @@ class Nide{
 
             if(coloredCode[i]=='\n'){
                 lineLevel++;
-                if(haveSpaceAfterNewLine){
-                    if(lineLevel-1 == this.cursorLineLevel){
-                        continue;
-                    }
-                }
             }
 
             if(j == this.startSelect){
                 this.startSelectAfterColored = i;
                 this.afterStartSelectLine = lineLevel+1;
+                if(coloredCode[i]=='\n'){
+                    this.afterStartSelectLine = lineLevel;
+                }
             }
 
             if(j == this.endSelect){
@@ -1543,6 +1586,14 @@ class Nide{
 
             if(j == this.cursor){
                 this.cursorAfterColored = i;
+            }
+
+            if(coloredCode[i]=='\n'){
+                if(haveSpaceAfterNewLine){
+                    if(lineLevel-1 == this.cursorLineLevel){
+                        continue;
+                    }
+                }
             }
 
             j++;
