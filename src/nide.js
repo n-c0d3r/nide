@@ -778,6 +778,7 @@ class Nide{
         else{
             this.code = name+' Not Found!!!';
         }
+        this.AddToCodeHis(this.code);
 
     }
 
