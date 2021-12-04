@@ -216,7 +216,21 @@ class Nide{
                     }
 
                     if(key && key.meta && key.name == "x"){
-                        app.DeleteCurrentLine();
+                        if(app.selectMode == 0){
+                            app.DeleteCurrentLine();
+                        }
+                        else{
+                            let startSelect = app.startSelect;
+                            let endSelect = app.endSelect;
+                            app.Copy();
+
+                            app.startSelect = startSelect;
+                            app.endSelect = endSelect;
+
+                            app.selectMode = 2;
+
+                            app.Delete();
+                        }
                         return;
                     }
                     if(key && key.ctrl && key.name == "y"){
@@ -1111,6 +1125,16 @@ class Nide{
         newCursor2 = clamp(newCursor2,0,this.code.length);
 
         this.AddToCodeHis(this.code);
+
+        let copyData = this.code.substring(newCursor+2,newCursor2);
+
+        ncp.copy(copyData,function(){
+
+        });
+        
+        this.selectMode = 0;
+        this.startSelect = -1;
+        this.endSelect = -1;
 
         this.code = this.code.substring(0,newCursor+1) + this.code.substring(newCursor2+1,this.code.length);
 
