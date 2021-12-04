@@ -124,6 +124,8 @@ class Nide{
         this.startSelect = -1;
         this.endSelect = -1;
 
+        this.FEXP_hideChecks = [];
+
         this.mode = option.mode;
 
         this.code = '';
@@ -1395,6 +1397,17 @@ class Nide{
 
             if(level<maxLevel || (app.FEXP_openedItems[path.normalize(item.path)] == true))
                 for(let child of item.childs){
+                    if((()=>{
+                        for(let checker of app.FEXP_hideChecks){
+                            if(checker(child.name)){
+                                return true;
+                            }
+                        }
+                        return false;
+                    })()){
+
+                    }
+                    else
                     childsStr+=spaces((level+1)*2)+GetStrFromItem(child,level+1);
                 }
 
@@ -1411,8 +1424,9 @@ class Nide{
                     name += '';
                 }
             }
-            else
+            else{
                 name = '   '+name;
+            }
 
 
             return `${name}\n${childsStr}`;
@@ -1481,6 +1495,29 @@ class Nide{
 
     GetMaxHeight(){
         return process.stdout.rows - this.GetHeaderLineCount() - 1 - this.GetTextEditorCommandLineCount();
+    }
+
+    FEXPHideFile(str){
+        let newStr = `return ((nide)=>{
+            var EndWith = function(str){
+                const s = str;
+                var r = function(name){
+
+                    return (name.substring(name.length - s.length,name.length) == s);
+
+                }
+                return r;
+            };
+            return [${str}];
+        })`;
+        var result = [];
+        try{
+            result = ((Function(newStr)())(this));
+        }
+        catch{
+
+        }
+        this.FEXP_hideChecks = result;
     }
 
     ReprintCode(option){
