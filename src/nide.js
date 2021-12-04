@@ -31,7 +31,7 @@ const withLineIndicesCode = function(coloredCode,maxSpaces,cursorLineLevel,nide)
     if(cursorLineLevel != lineLevel){
         coloredCode = '\x1b[30m\x1b[1m'+spaces(maxSpaces)+'0 '+'|\x1b[0m'+
         (()=>{
-            if(0>=nide.startSelectAfterColored && 0<=nide.endSelectAfterColored){
+            if(0>=nide.startSelectAfterColored && 0<=(nide.beforeEndSelectLine+1) && nide.selectMode!=0){
                 return '\x1b[47m\x1b[30m';
             }
             return '';
@@ -41,7 +41,7 @@ const withLineIndicesCode = function(coloredCode,maxSpaces,cursorLineLevel,nide)
     else{
         coloredCode = '\x1b[35m'+spaces(maxSpaces)+'0 '+'\x1b[0m|\x1b[0m\x1b[45m\x1b[30m'+
         (()=>{
-            if(0>=nide.afterStartSelectLine && 0<=nide.beforeEndSelectLine){
+            if(0>=nide.afterStartSelectLine && 0<=(nide.beforeEndSelectLine+1) && nide.selectMode!=0){
                 return '\x1b[47m\x1b[30m';
             }
             return '';
@@ -57,7 +57,7 @@ const withLineIndicesCode = function(coloredCode,maxSpaces,cursorLineLevel,nide)
             lineLevel++;
             if(cursorLineLevel != lineLevel){
                 newCode += '\x1b[0m\x1b[30m\x1b[1m' + spaces(maxSpaces - lineLevel.toString().length + 1) + lineLevel + ' |\x1b[0m' + (()=>{
-                    if(lineLevel>=nide.afterStartSelectLine && lineLevel<=nide.beforeEndSelectLine){
+                    if(lineLevel>=nide.afterStartSelectLine && lineLevel<=(nide.beforeEndSelectLine+1) && nide.selectMode!=0){
                         return '\x1b[47m\x1b[30m';
                     }
                     return '';
@@ -65,7 +65,7 @@ const withLineIndicesCode = function(coloredCode,maxSpaces,cursorLineLevel,nide)
             }
             else{
                 newCode += '\x1b[0m\x1b[35m' + spaces(maxSpaces - lineLevel.toString().length + 1) + lineLevel + ' \x1b[0m|' + (()=>{
-                    if(lineLevel>=nide.afterStartSelectLine && lineLevel<=nide.beforeEndSelectLine){
+                    if(lineLevel>=nide.afterStartSelectLine && lineLevel<=(nide.beforeEndSelectLine+1) && nide.selectMode!=0){
                         return '\x1b[47m\x1b[30m';
                     }
                     return '\x1b[0m\x1b[45m\x1b[30m';
@@ -109,6 +109,8 @@ class Nide{
     constructor(option){
 
         var app = this;
+
+        this.selectMode = 0;
 
         this.cursorLineLevel = 0;
 
@@ -182,12 +184,13 @@ class Nide{
         this.teCommandCode = '';
         this.teCommandCursor = 0;
 
+        app.startSelect = -1;
+        app.endSelect = -1;
+
         this.console.keypressEventListeners['Nide'] = function(ch,key){
 
             app.enableTextEditor = true;
             
-            app.startSelect = 100;
-            app.endSelect = app.code.length-10;
 
             for(let keypressEventListener of app.keypressEventListeners){
                 keypressEventListener(ch,key);
@@ -287,6 +290,10 @@ class Nide{
                         app.Clear();
                         return;
                     }
+                    if(key && key.ctrl && key.name == "c"){
+                        app.Copy();
+                        return;
+                    }
                 }
                 if(key && key.meta && key.name == "k"){
                     //app.Exit();
@@ -304,7 +311,21 @@ class Nide{
                     return;
                 }
                 if(key && key.meta && key.name == "m"){
-                    app.code = app.lastFileOpenedCode;
+                    app.selectMode++;
+                    if(app.selectMode==3){
+                        app.selectMode = 0;
+                    }
+                    if(app.selectMode==0){
+                        app.startSelect = -1;
+                        app.endSelect = -1;
+                    }
+                    if(app.selectMode==1){
+                        app.startSelect = clamp(app.cursor,0,app.code.length-1);
+                        app.endSelect = app.startSelect;
+                    }
+                    if(app.selectMode==2){
+                        app.endSelect = clamp(app.cursor,0,app.code.length-1);
+                    }
                     app.ReprintCode();
                     return;
                 }
@@ -374,6 +395,17 @@ class Nide{
 
     Search(data){
 
+    }
+
+    Copy(){
+        if(this.selectMode!=0)
+            ncp.copy(this.code.substring(this.startSelect,this.endSelect+1),function(){
+
+            });
+        this.selectMode = 0;
+        this.startSelect = -1;
+        this.endSelect = -1;
+        this.ReprintCode();
     }
 
     AddTextEditorCommandBar(code){
@@ -1509,7 +1541,7 @@ class Nide{
             j++;
         }
 
-        if(this.startSelect>=0 && this.endSelect>=0 && this.startSelectAfterColored != this.endSelectAfterColored){
+        if(this.startSelect>=0 && this.endSelect>=0){
 
            let offset = 0;
 
