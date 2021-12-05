@@ -1075,6 +1075,16 @@ class Nide{
             this.cursor = clamp(newCursor,0,this.code.length);
             this.ReprintCode();
         }
+        
+        let startLine = this.cursor-1;
+
+        for(; startLine>=0; startLine--){
+            if(this.code[startLine]=='\n'){
+                break;
+            }
+        }
+
+        this.targetCursorX = this.cursor - startLine;
     }
 
     Right(){
@@ -1091,9 +1101,22 @@ class Nide{
             this.cursor = clamp(newCursor,0,this.code.length);
             this.ReprintCode();
         }
+        let startLine = this.cursor-1;
+
+        for(; startLine>=0; startLine--){
+            if(this.code[startLine]=='\n'){
+                break;
+            }
+        }
+
+        this.targetCursorX = this.cursor - startLine;
     }
 
     Up(){
+
+        if(this.targetCursorX == null){
+            this.targetCursorX = 0;
+        }
 
         let startLine = this.cursor-1;
 
@@ -1104,6 +1127,10 @@ class Nide{
         }
 
         let x = this.cursor - startLine;
+
+        this.targetCursorX = Math.max(this.targetCursorX,x);
+
+        x = this.targetCursorX;
 
         let newCursor = startLine-1;
 
@@ -1123,6 +1150,10 @@ class Nide{
 
     Down(){
 
+        if(this.targetCursorX == null){
+            this.targetCursorX = 0;
+        }
+
         let startLine = this.cursor-1;
 
         for(; startLine>=0; startLine--){
@@ -1132,6 +1163,10 @@ class Nide{
         }
 
         let x = this.cursor - startLine;
+
+        this.targetCursorX = Math.max(this.targetCursorX,x);
+
+        x = this.targetCursorX;
 
         let newCursor = this.cursor;
 
