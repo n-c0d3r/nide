@@ -1095,32 +1095,67 @@ class Nide{
 
     Up(){
 
-        let newCursor = this.cursor-1;
+        let startLine = this.cursor-1;
 
-        for(let i = newCursor; i>=0; i--){
-            if(this.code[i]=='\n' || i==0){
-                newCursor=i;
+        for(; startLine>=0; startLine--){
+            if(this.code[startLine]=='\n'){
                 break;
             }
         }
 
-        this.cursor=clamp(newCursor,0,this.code.length);
+        let x = this.cursor - startLine;
+
+        let newCursor = startLine-1;
+
+        for(let i = newCursor; i>=0; i--){
+            if(this.code[i]=='\n'){
+                newCursor = i;
+                break;
+            }
+        }
+
+        x = Math.min(startLine - newCursor, x);
+
+        this.cursor=clamp(newCursor + x,0,this.code.length);
 
         this.ReprintCode();
     }
 
     Down(){
 
-        let newCursor = this.cursor+1;
+        let startLine = this.cursor-1;
 
-        for(let i = newCursor; i<this.code.length; i++){
-            if(this.code[i]=='\n' || i==this.code.length-1){
-                newCursor=i;
+        for(; startLine>=0; startLine--){
+            if(this.code[startLine]=='\n'){
                 break;
             }
         }
 
-        this.cursor=clamp(newCursor,0,this.code.length);
+        let x = this.cursor - startLine;
+
+        let newCursor = this.cursor;
+
+        for(let i = newCursor; i<this.code.length; i++){
+            if(this.code[i]=='\n'){
+                newCursor = i;
+                break;
+            }
+        }
+
+        let newCursor2 = newCursor+1;
+
+        for(let i = newCursor2; i<this.code.length; i++){
+            if(this.code[i]=='\n'){
+                newCursor2 = i;
+                break;
+            }
+        }
+
+
+        x = Math.min(newCursor2 - newCursor, x);
+        
+
+        this.cursor=clamp(newCursor + x,0,this.code.length);
 
         this.ReprintCode();
     }
