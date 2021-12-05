@@ -5,7 +5,12 @@ module.exports = (args)=>{
             'code': '',
             'fileName': nide.defaultFileName,
             'mode': nide.mode,
-            'cwd': nide.cwd
+            'cwd': nide.cwd,
+            'codeHis':[{
+                'code':'',
+                'cursor':0
+            }],
+            'hisCIndex':0
         });
     `;
 }
