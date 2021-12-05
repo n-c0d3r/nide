@@ -1,0 +1,51 @@
+ ▾ nide
+   ▸ .git
+   ▾ .nide
+       config.json
+     ▾ plugins
+         plugins.json
+       start.js
+       start.nide
+     controller.nide
+     fileExplorer.nide
+     help.nide
+     LICENSE
+   ▸ node_modules
+     package-lock.json
+     package.json
+     README.md
+   ▾ src
+     ▾ commands
+         $$.js
+         $.js
+         cd.js
+         cf.js
+         cls.js
+         cp.js
+         deletegroup.js
+         exit.js
+         help.js
+         jsopen.js
+         mode.js
+         n.js
+         newgroup.js
+         newtab.js
+         nexttab.js
+         nf.js
+         open.js
+         pyopen.js
+         reloadfile.js
+         te.js
+     ▾ config
+         config.json
+     ▾ console
+         console.js
+       index.js
+     ▾ libs
+       nide.js
+     ▾ plugins
+       ▾ chrome
+           plugin.js
+         plugins.json
+       ▾ textEditorCommandBar
+           plugin.js

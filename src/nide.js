@@ -784,11 +784,12 @@ class Nide{
             this.tabs[this.currentTabIndex].code = this.code;
 
             this.tabGroups[this.tabGroupIndex].tabs = this.tabs;
+            
+            this.AddToCodeHis(this.code);
         }
         else{
             this.code = name+' Not Found!!!';
         }
-        this.AddToCodeHis(this.code);
 
     }
 
@@ -804,6 +805,7 @@ class Nide{
 
             this.lastFileOpenedCode = this.code;
 
+            this.AddToCodeHis(this.code);
         }
         else{
             this.code = name+' Not Found!!!';
