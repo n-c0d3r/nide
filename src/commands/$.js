@@ -1,4 +1,4 @@
-module.exports = (args)=>{
+module.exports = (args,args2)=>{
     let command = '';
     for(let i=1;i<args.length;i++){
         command += args[i];

@@ -589,6 +589,12 @@ class Nide{
         }
     }
 
+    ChangeFileName(fileName){
+
+        this.CF(fileName);
+
+    }
+
     Start(){
 
         this.ReprintCode();
@@ -661,6 +667,44 @@ class Nide{
 
                 let compiledLine = '';
 
+                let args2 = [];
+
+                let arg_isInStr = false;
+                let arg_strChr = '';
+
+                for(let a of args){
+                    
+                    let prev_arg_isInStr = arg_isInStr;
+
+                    for(let i = 0; i < a.length; i++){
+                        if(!arg_isInStr){
+
+                            if(a[i] == '"' || a[i] == '`' || a[i] == "'"){
+                                arg_strChr = a[i];
+                                arg_isInStr = true;
+                            }
+
+                        }
+                        else{
+
+                            if(a[i] == arg_strChr){
+                                arg_isInStr = false;
+                            }
+
+                        }
+                    }
+
+                    if(prev_arg_isInStr){
+
+                        args2[args2.length-1] = args2[args2.length-1] + ' ' + a; 
+
+                    }
+                    else{
+                        args2.push(a);
+                    }
+
+                }
+
                 let newArgs = [];
 
                 for(let a of args){
@@ -676,7 +720,7 @@ class Nide{
 
                     try{
                         command = require(__dirname+'/commands/'+args[0]);
-                        compiledLine = command(args);
+                        compiledLine = command(args, args2);
                     }
                     catch(err){
                         compiledCode += err;
@@ -857,6 +901,12 @@ class Nide{
         this.OpenTab(this.tabGroups[this.tabGroupIndex].currentTabIndex);
 
         this.ReprintCode();
+    }
+
+    OpenNextTabGroup(){
+
+        this.OpenTabGroup(this.tabGroupIndex+1);
+
     }
 
     RunCode(mode,code){

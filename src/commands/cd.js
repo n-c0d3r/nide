@@ -1,7 +1,7 @@
-module.exports = (args)=>{
+module.exports = (args,args2)=>{
     return `
         nide.code='';
-        nide.CD(${args[1]});
+        nide.CD(${args2[1]});
         nide.ReprintCode();
     `;
 }
